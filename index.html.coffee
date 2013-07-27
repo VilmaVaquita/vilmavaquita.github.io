@@ -28,7 +28,9 @@ htmlcup.html5Page ->
     @div "Vaquitas are the smallest marine cetacean."
     @div 'Their number has declined by 60% in 10 years, from an estimated 576 in 1997 to perhaps less than 150 individuals now, and could be extict by 2015'
     @div "A marine sactuary is Vaquitas' only chance of survival; each year 30 to 80 of them die in fishing nets"
-    @div "Vaquitas now only survive in a small 40-mile stretch in the Gulf of California"
+    @div "Vaquitas now only live in a small stretch in the Gulf of California"
     @div ->
-      @h1 'Petition you can sign'
+      @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', "Commemorative video of a baby Vaquita"
+    @div ->
+      @span 'Petition you can sign: '
       @a href: 'http://www.thepetitionsite.com/445/471/778/protected-reserves-for-critically-endangered-vaquita-porpoises/', "Protected Reserves for Critically Endangered Vaquita Porpoises"
