@@ -1,0 +1,3 @@
+[submodule "htmlcup"]
+	path = htmlcup
+	url = ./htmlcup
