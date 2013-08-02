@@ -13,16 +13,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 { htmlcup } = require './htmlcup'
+fs = require "fs"
 
 title = "Vaquitas need you!"
+icon = "vaquita.ico"
+
+icon = "data:image/x-icon;base64," + (new Buffer(fs.readFileSync(icon))).toString("base64")
 
 htmlcup.html5Page ->
   @head ->
+    @link rel:"shortcut icon", href:icon
     @title title
-    @style type: "text/css",
-      """
-      body { background:pink }
-      """
+    @cssStyle "body { background:pink }"
   @body ->
     @div "Please don't kill this baby!"
     @div "Vaquitas are the smallest marine cetacean."
