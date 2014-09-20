@@ -16,6 +16,11 @@
 
 title = "Vaquitas need you!"
 
+fs = require 'fs'
+
+icon = "vaquita.ico"
+icon = "data:image/x-icon;base64," + (new Buffer(fs.readFileSync(icon))).toString("base64")
+
 htmlcup.html5Page ->
   @head ->
     @title title
@@ -24,17 +29,24 @@ htmlcup.html5Page ->
       body {
         /* background:pink; */
         /* background: #69B2FF; */
-        background: #21AFF8;
+        /* background: #21AFF8; */
+        background: #0286E8;
         text-align: center;
-        font-size: 20px;
+        font-size: 22px;
+        font-family: Helvetica;
       }
       .banner {
         border: 4px solid white;
         border: 4px solid white rgba(255,255,255,0.9);
+        box-shadow: 0 2px 4px blue;
+        margin: 0.5em;
       }
       p {
         color:white;
         color:rgba(255,255,255,0.9);
+        margin:0.418em;
+        max-width:20em;
+        text-shadow: 0 1px 1px blue;
       }
       a {
         /*
@@ -56,20 +68,31 @@ htmlcup.html5Page ->
         background-color:rgba(20,70,180,1.0);
       }
       .petition {
-        padding:0.2em;
+        margin:0.418em;
+        padding:0.618em;
       }
       .petition a {
         font-size:127.2%;
+        box-shadow: 0 2px 4px blue;
+        margin:0.3em;
       }
   @body ->
-    @img class:"banner", src:"vaquita1.jpg"
-    @p "Please don't kill this baby!"
-    @p "Vaquitas are the smallest marine cetacean."
-    @p 'Their number has declined by 60% in 10 years, from an estimated 576 in 1997 to 97 individuals in 2014, and could be extict by 2017'
-    @p "A marine sactuary is Vaquitas' only chance of survival; each year literally tens of them die in fishing nets"
-    @p "Vaquitas now only live in a small stretch in the Gulf of California"
-    @p ->
-      @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', "Commemorative video of a baby Vaquita"
-    @p class:"petition", ->
-      @span 'Petition you can sign: '
-      @a href: 'http://www.thepetitionsite.com/445/471/778/protected-reserves-for-critically-endangered-vaquita-porpoises/', "Protected Reserves for Critically Endangered Vaquita Porpoises"
+    @div ->
+      @div style:"display:inline-block", ->
+        @link rel:"shortcut icon", href:icon
+        @img class:"banner", src:"vaquita1.jpg"
+    @div ->
+      @div style:"display:inline-block", ->
+        @p "Please don't kill this baby!"
+        @p "Vaquitas are the smallest marine cetacean."
+        @p ->
+          @span "Their population has decreased from an estimated 576 in 1997 to 97 individuals in 2014, which means that could be extinct as early as 2017"
+        @p "A marine sactuary is Vaquitas' only chance of survival; each year literally tens of them die in fishing nets"
+        @p "Vaquitas now only live in a small stretch in the Gulf of California"
+        @p class:"petition", ->
+          @span 'Petition you can sign: '
+          @a href: 'http://www.thepetitionsite.com/445/471/778/protected-reserves-for-critically-endangered-vaquita-porpoises/', "Protected Reserves for Critically Endangered Vaquita Porpoises"
+        @p ->
+          @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', ->
+            # @img src:"vaquita2.jpg"
+            @span "Commemorative video of a baby Vaquita"
