@@ -23,6 +23,7 @@ icon = "data:image/x-icon;base64," + (new Buffer(fs.readFileSync(icon))).toStrin
 
 htmlcup.html5Page ->
   @head ->
+    @link rel:"shortcut icon", href:icon
     @title title
     @style type: "text/css",
       ''''
