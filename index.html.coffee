@@ -46,7 +46,11 @@ htmlcup.html5Page ->
       p {
         color:white;
         color:rgba(255,255,255,0.9);
-        margin:0.418em;
+        width:20em;
+        margin-top:0.418em;
+        margin-bottom:0.418em;
+        margin-left:auto;
+        margin-right:auto;
         max-width:20em;
         text-shadow: 0 1px 1px blue;
       }
@@ -78,7 +82,23 @@ htmlcup.html5Page ->
         box-shadow: 0 2px 4px blue;
         margin:0.3em;
       }
+      .centering {
+        text-align:center;
+      }
+      .centering:before {
+        content: '';
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+        margin-right: -0.25em;
+      }
+      .centered {
+        display:inline-block;
+        vertical-align:middle;
+      }
   @body ->
+    @div class:"centering", ->
+     @div class:"centered", ->
       @div style:"display:inline-block", ->
         @link rel:"shortcut icon", href:icon
         @img class:"banner", src:"vaquita1.jpg"
@@ -91,8 +111,6 @@ htmlcup.html5Page ->
         @p "Vaquitas only live in a small stretch in the Gulf of California and share their habitat with the Totoaba"
         @p class:"petition", ->
           @span 'Petition you can sign: '
-          @a href: 'http://www.thepetitionsite.com/445/471/778/protected-reserves-for-critically-endangered-vaquita-porpoises/', "Protected Reserves for Critically Endangered Vaquita Porpoises"
+          @a href: 'http://www.thepetitionsite.com/569/482/287/extend-protections-for-critically-endangered-vaquita-porpoises/', "Protected Reserves for Critically Endangered Vaquita Porpoises"
         @p ->
-          @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', ->
-            # @img src:"vaquita2.jpg"
-            @span "Commemorative video of a baby Vaquita"
+          @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', "Commemorative video of a baby Vaquita"
