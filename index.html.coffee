@@ -101,7 +101,7 @@ htmlcup.html5Page ->
      @div class:"centered", ->
       @div style:"display:inline-block", ->
         @link rel:"shortcut icon", href:icon
-        @img class:"banner", src:"vaquita1.jpg"
+        @img class:"banner", src:"vaquita1.jpg", title:"This vaquita was set free by a mysterious artist who prefers to stay anonymous ☺"
       @div style:"display:inline-block", ->
         @p "Please don't kill this baby!"
         @p "Vaquitas are the smallest marine cetacean."
