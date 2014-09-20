@@ -30,7 +30,8 @@ htmlcup.html5Page ->
         /* background:pink; */
         /* background: #69B2FF; */
         /* background: #21AFF8; */
-        background: #0286E8;
+        /* background: #0286E8; */
+         background: #1096EE;
         text-align: center;
         font-size: 22px;
         font-family: Helvetica;
@@ -39,7 +40,7 @@ htmlcup.html5Page ->
         border: 4px solid white;
         border: 4px solid white rgba(255,255,255,0.9);
         box-shadow: 0 2px 4px blue;
-        margin: 0.5em;
+        margin: 1em;
       }
       p {
         color:white;
@@ -77,18 +78,16 @@ htmlcup.html5Page ->
         margin:0.3em;
       }
   @body ->
-    @div ->
       @div style:"display:inline-block", ->
         @link rel:"shortcut icon", href:icon
         @img class:"banner", src:"vaquita1.jpg"
-    @div ->
       @div style:"display:inline-block", ->
         @p "Please don't kill this baby!"
         @p "Vaquitas are the smallest marine cetacean."
         @p ->
           @span "Their population has decreased from an estimated 576 in 1997 to 97 individuals in 2014, which means that could be extinct as early as 2017"
-        @p "A marine sactuary is Vaquitas' only chance of survival; each year literally tens of them die in fishing nets"
-        @p "Vaquitas now only live in a small stretch in the Gulf of California"
+        @p "A really protected marine sactuary is Vaquitas' only chance of survival; each year literally tens of them die in fishing nets and cages; according to recent research, this is because of the illegal fishing of Totoaba"
+        @p "Vaquitas only live in a small stretch in the Gulf of California and share their habitat with the Totoaba"
         @p class:"petition", ->
           @span 'Petition you can sign: '
           @a href: 'http://www.thepetitionsite.com/445/471/778/protected-reserves-for-critically-endangered-vaquita-porpoises/', "Protected Reserves for Critically Endangered Vaquita Porpoises"
