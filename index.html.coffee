@@ -83,6 +83,19 @@ htmlcup.html5Page ->
         margin:0.3em;
       }
       .centering {
+        display: table;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .centered {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: center;
+      }
+    do->
+      ''''
+      .centering {
         text-align:center;
       }
       .centering:before {
@@ -104,7 +117,7 @@ htmlcup.html5Page ->
         @img class:"banner", src:"vaquita1.jpg", title:"This vaquita was set free by a mysterious artist who prefers to stay anonymous ☺"
       @div style:"display:inline-block", ->
         @p "Please don't kill this baby!"
-        @p "Vaquitas are the smallest marine cetacean."
+        @p "Vaquitas are the smallest and rarest marine cetacean; they are mammalians like us."
         @p ->
           @span "Their population has decreased from an estimated 576 in 1997 to 97 individuals in 2014, which means that could be extinct as early as 2017"
         @p "A really protected marine sactuary is Vaquitas' only chance of survival; each year literally tens of them die in fishing nets and cages; according to recent research, this is because of the illegal fishing of Totoaba"
