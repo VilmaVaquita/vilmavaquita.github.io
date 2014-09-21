@@ -23,6 +23,7 @@ icon = "data:image/x-icon;base64," + (new Buffer(fs.readFileSync(icon))).toStrin
 
 htmlcup.html5Page ->
   @head ->
+    @meta charset:"utf-8"
     @link rel:"shortcut icon", href:icon
     @title title
     @style type: "text/css",
@@ -92,22 +93,6 @@ htmlcup.html5Page ->
         display: table-cell;
         vertical-align: middle;
         text-align: center;
-      }
-    do->
-      ''''
-      .centering {
-        text-align:center;
-      }
-      .centering:before {
-        content: '';
-        display: inline-block;
-        height: 100%;
-        vertical-align: middle;
-        margin-right: -0.25em;
-      }
-      .centered {
-        display:inline-block;
-        vertical-align:middle;
       }
   @body ->
     @div class:"centering", ->
