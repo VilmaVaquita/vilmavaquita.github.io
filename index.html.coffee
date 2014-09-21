@@ -83,28 +83,37 @@ htmlcup.html5Page ->
         box-shadow: 0 2px 4px blue;
         margin:0.3em;
       }
+      .page {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        border: 0;
+      }
       .centering {
         display: table;
         padding: 0;
-        width: 100%;
-        height: 100%;
       }
       .centered {
         display: table-cell;
         vertical-align: middle;
         text-align: center;
       }
+      .inline-block {
+        display: inline-block;
+      }
+      .dynamic-section {
+        display: inline-block;
+        vertical-align:middle;
+      }
   @body ->
-    @div class:"centering", ->
+    @div class:"centering page", ->
      @section class:"centered", ->
-      @div style:"display:inline-block", ->
-        @link rel:"shortcut icon", href:icon
+      @section class:"dynamic-section", ->
         @img class:"banner", src:"vaquita1.jpg", title:"This vaquita was set free by a mysterious artist who prefers to stay anonymous ☺"
-      @section style:"display:inline-block", ->
+      @section class:"dynamic-section", ->
         @p "Please don't kill this baby!"
-        @p "Vaquitas are the smallest and rarest marine cetacean; they are mammalians like us."
-        @p ->
-          @span "Their population has decreased from an estimated 576 in 1997 to 97 individuals in 2014, which means that could be extinct as early as 2017"
+        @p "Vaquitas are the smallest and rarest marine cetacean, they are mammalians like us."
+        @p "Their population has decreased from an estimated 576 in 1997 to 97 individuals in 2014, which means that could be extinct as early as 2017"
         @p "A really protected marine sactuary is Vaquitas' only chance of survival; each year literally tens of them die in fishing nets and cages; according to recent research, this is because of the illegal fishing of Totoaba"
         @p "Vaquitas only live in a small stretch in the Gulf of California and share their habitat with the Totoaba"
         @p class:"petition", ->
