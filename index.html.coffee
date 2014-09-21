@@ -39,8 +39,8 @@ htmlcup.html5Page ->
         font-family: Helvetica;
       }
       .banner {
-        border: 4px solid white;
-        border: 4px solid white rgba(255,255,255,0.9);
+        border: 5px solid white;
+        border: 5px solid white rgba(255,255,255,0.9);
         box-shadow: 0 2px 4px blue;
         margin: 1em;
       }
@@ -96,11 +96,11 @@ htmlcup.html5Page ->
       }
   @body ->
     @div class:"centering", ->
-     @div class:"centered", ->
+     @section class:"centered", ->
       @div style:"display:inline-block", ->
         @link rel:"shortcut icon", href:icon
         @img class:"banner", src:"vaquita1.jpg", title:"This vaquita was set free by a mysterious artist who prefers to stay anonymous ☺"
-      @div style:"display:inline-block", ->
+      @section style:"display:inline-block", ->
         @p "Please don't kill this baby!"
         @p "Vaquitas are the smallest and rarest marine cetacean; they are mammalians like us."
         @p ->
