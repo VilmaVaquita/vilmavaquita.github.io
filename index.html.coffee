@@ -117,7 +117,7 @@ htmlcup.html5Page ->
           @span " are the smallest and rarest marine cetacean, they are mammalians like us."
         @p "Their population has decreased from an estimated 576 in 1997 to 97 individuals in 2014, which means that could be extinct as early as 2017"
         @p "A really protected marine sanctuary is Vaquitas' only chance of survival; each year literally tens of them die in fishing nets; according to recent research, this is because of the illegal fishing of Totoaba"
-        @p "Vaquitas only live in a small stretch in the Gulf of California and share their habitat with the Totoaba"
+        @p "Vaquitas only live in a small area of the Gulf of California and share their habitat with the Totoaba"
         @p class:"petition", ->
           @span 'Petition you can sign: '
           @a href: 'http://www.thepetitionsite.com/569/482/287/extend-protections-for-critically-endangered-vaquita-porpoises/', "Extend Protections for Critically Endangered Vaquita Porpoises"
