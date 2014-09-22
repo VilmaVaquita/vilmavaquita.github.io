@@ -20,6 +20,8 @@ fs = require 'fs'
 
 icon = "vaquita.ico"
 icon = "data:image/x-icon;base64," + (new Buffer(fs.readFileSync(icon))).toString("base64")
+pixyvaquita = "pixyvaquita.png"
+pixyvaquita = "data:image/png;base64," + (new Buffer(fs.readFileSync(pixyvaquita))).toString("base64")
 
 htmlcup.html5Page ->
   @head ->
@@ -105,11 +107,27 @@ htmlcup.html5Page ->
         display: inline-block;
         vertical-align:middle;
       }
+      .flip-lr {
+        -moz-transform:     scaleX(-1);
+        -o-transform:       scaleX(-1);
+        -webkit-transform:  scaleX(-1);
+        transform:          scaleX(-1);
+        filter:             FlipH;
+        -ms-filter:         "FlipH";
+      }
+      .pixelart {
+        image-rendering: -moz-crisp-edges; 
+        -ms-interpolation-mode: nearest-neighbor;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
   @body ->
     @div class:"centering page", ->
      @section class:"centered", ->
       @section class:"dynamic-section", ->
         @img class:"banner", src:"vaquita1.jpg", title:"This vaquita was set free by a mysterious artist who prefers to stay anonymous ☺"
+        @br()
+        @img src:pixyvaquita, title:"Please be our friend!", width:"150", height:"90", class:"flip-lr"
       @section class:"dynamic-section", ->
         @p "Please don't kill this baby!"
         @p ->
