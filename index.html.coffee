@@ -144,6 +144,8 @@ htmlcup.html5Page ->
         @p "Vaquitas only live in a small area of the Gulf of California and share their habitat with the Totoaba"
         @p class:"petition", ->
           @span 'Petition you can sign: '
-          @a href: 'http://www.thepetitionsite.com/569/482/287/extend-protections-for-critically-endangered-vaquita-porpoises/', "Extend Protections for Critically Endangered Vaquita Porpoises"
+          @a
+            # href: 'http://www.thepetitionsite.com/569/482/287/extend-protections-for-critically-endangered-vaquita-porpoises/', "Extend Protections for Critically Endangered Vaquita Porpoises"
+            href: 'http://act.oceanconservancy.org/site/MessageViewer?dlv_id=41469&em_id=30824.0&'
         @p ->
           @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', "Commemorative video of a baby Vaquita"
