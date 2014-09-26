@@ -29,7 +29,7 @@ htmlcup.html5Page ->
     @link rel:"shortcut icon", href:icon
     @title title
     @style type: "text/css",
-      ''''
+      """
       body {
         /* background:pink; */
         /* background: #69B2FF; */
@@ -49,12 +49,12 @@ htmlcup.html5Page ->
       p {
         color:white;
         color:rgba(255,255,255,0.9);
-        width:20em;
         margin-top:0.418em;
         margin-bottom:0.418em;
         margin-left:auto;
         margin-right:auto;
-        max-width:20em;
+        width:22em;
+        max-width:100%;
         text-shadow: 0 1px 1px blue;
       }
       a {
@@ -106,6 +106,7 @@ htmlcup.html5Page ->
       .dynamic-section {
         display: inline-block;
         vertical-align:middle;
+        max-width:100%;
       }
       .flip-lr {
         -moz-transform:     scaleX(-1);
@@ -116,18 +117,23 @@ htmlcup.html5Page ->
         -ms-filter:         "FlipH";
       }
       .pixelart {
-        image-rendering: -moz-crisp-edges; 
-        -ms-interpolation-mode: nearest-neighbor;
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
+        image-rendering:optimizeSpeed;             /* Legal fallback */
+        image-rendering:-moz-crisp-edges;          /* Firefox        */
+        image-rendering:-o-crisp-edges;            /* Opera          */
+        image-rendering:-webkit-optimize-contrast; /* Safari         */
+        image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+        image-rendering:crisp-edges;               /* CSS4 Proposed  */
+        image-rendering:pixelated;                 /* CSS4 Proposed  */
+        -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
       }
+      """
   @body ->
     @div class:"centering page", ->
      @section class:"centered", ->
       @section class:"dynamic-section", ->
         @img class:"banner", src:"vaquita1.jpg", title:"This vaquita was set free by a mysterious artist who prefers to stay anonymous ☺"
         @br()
-        @img src:pixyvaquita, title:"Please be our friend!", width:"150", height:"90", class:"flip-lr"
+        @img src:pixyvaquita, title:"Please be our friend!", width:"150", height:"90", class:"flip-lr pixelart"
       @section class:"dynamic-section", ->
         @p "Please don't kill this baby!"
         @p ->
