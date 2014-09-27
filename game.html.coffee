@@ -203,7 +203,7 @@ genPage = ->
           n.setAttribute "opacity", "0.5"
           # n.setAttribute "transform", ""
           sea.appendChild n
-          angle = Math.random() * 3.14        
+          angle = Math.random() * 6.28
           vaquita = 
             e: n
             x: Math.sin(angle) * 300
