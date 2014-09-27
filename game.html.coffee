@@ -156,7 +156,7 @@ genPage = ->
     @div class:"centering page", ->
      @div class:"centered", ->
       if useSvg
-        @svg width:"960", height:"720", ->
+        @svg id:"sea-svgroot", width:"960", height:"720", ->
           @defs ->
             @linearGradient id:"grad1", x1:"0%", y1:"0%", x2:"0%", y2:"100%", ->
               @stop offset:"0%", style:"stop-color:rgb(255,255,255);stop-opacity:1"
@@ -177,10 +177,12 @@ genPage = ->
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
     @coffeeScript ->
+      svgroot = document.getElementById("sea-svgroot")
+
       screen_x1 = 240
       screen_y1 = 180
       vaquitas = [ ]
-      vaquita =
+      vaquitaObj =
         update: (x, y)->
           if !window.abcd
             window.abcd = 1
@@ -199,9 +201,18 @@ genPage = ->
             @scaleX = 1
           else if vx < 0
             @scaleX = -1
-          @e.setAttribute "transform", "translate(#{x}, #{y}) scale(#{@scaleX}, 1)"
+          # @e.setAttribute "transform", "translate(#{x}, #{y}) scale(#{@scaleX}, 1)"
+          m = @m; m.e = x; m.f = y; m.a = @scaleX
       sea = document.getElementById "sea"
       v = sea.firstChild
+
+      getTransformMatrix = (el)->
+          transformListXX = el.transform.baseVal
+          transformMatrixXX = svgroot.createSVGMatrix()
+          transformXX = svgroot.createSVGTransform()
+          transformXX.setMatrix(transformMatrixXX)
+          transformListXX.initialize(transformXX)
+          transformXX.matrix
 
       cloneVaquita = ->
           n = v.cloneNode()
@@ -210,13 +221,14 @@ genPage = ->
           sea.appendChild n
           angle = Math.random() * 6.28
           vaquita = 
-            e: n
+            # e: n
+            m: getTransformMatrix(n)
             x: Math.sin(angle) * 300
             y: Math.cos(angle) * 300
             vx: 0
             vy: 0
             scaleX: 1
-            __proto__: vaquita
+            __proto__: vaquitaObj
           vaquita.update()
           vaquitas.push vaquita
 
@@ -228,6 +240,7 @@ genPage = ->
 
       keyDownActions =
         32: cloneVaquita
+
       pressedKeys = { }
       pressedKeys[k] = 0 for k in usedKeys
 
@@ -246,6 +259,11 @@ genPage = ->
         scaleX = 1
         scaleY = 1
 
+        transformMatrix = getTransformMatrix(v)
+        transformMatrix.a = scaleX
+        transformMatrix.e = x
+        transformMatrix.f = y
+
         gameFrame = ->
           if (time & 0xff) is 0x00 and vaquitas.length < 4
             cloneVaquita()
@@ -256,7 +274,12 @@ genPage = ->
             scaleX = 1
           else if vx < 0
             scaleX = -1
-          v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
+          # v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
+          # transform = v.transform.baseVal.getItem(0)
+          transformMatrix.a = scaleX
+          transformMatrix.e = x
+          transformMatrix.f = y
+          # transformList.initialize(transform)
           vq.update() for vq in vaquitas
           time++
         
