@@ -27,6 +27,8 @@ icon = datauri("image/x-icon", fs.readFileSync(icon))
 pixyvaquita = "pixyvaquita.png"
 pixyvaquita = "data:image/png;base64," + (new Buffer(fs.readFileSync(pixyvaquita))).toString("base64")
 
+useSvg = true
+
 genPage = ->
  htmlcup.html5Page ->
   @head ->
@@ -153,21 +155,24 @@ genPage = ->
   @body ->
     @div class:"centering page", ->
      @div class:"centered", ->
-      @svg width:"960", height:"720", ->
-        @defs ->
-          @linearGradient id:"grad1", x1:"0%", y1:"0%", x2:"0%", y2:"100%", ->
-            @stop offset:"0%", style:"stop-color:rgb(255,255,255);stop-opacity:1"
-            @stop offset:"25%", style:"stop-color:rgb(100,200,250);stop-opacity:1"
-            @stop offset:"50%", style:"stop-color:rgb(0,80,240);stop-opacity:1"
-            @stop offset:"75%", style:"stop-color:rgb(0,0,180);stop-opacity:1"
-            @stop offset:"100%", style:"stop-color:rgb(0,0,0);stop-opacity:1"
-          @g id:"vaquita", ->
+      if useSvg
+        @svg width:"960", height:"720", ->
+          @defs ->
+            @linearGradient id:"grad1", x1:"0%", y1:"0%", x2:"0%", y2:"100%", ->
+              @stop offset:"0%", style:"stop-color:rgb(255,255,255);stop-opacity:1"
+              @stop offset:"25%", style:"stop-color:rgb(100,200,250);stop-opacity:1"
+              @stop offset:"50%", style:"stop-color:rgb(0,80,240);stop-opacity:1"
+              @stop offset:"75%", style:"stop-color:rgb(0,0,180);stop-opacity:1"
+              @stop offset:"100%", style:"stop-color:rgb(0,0,0);stop-opacity:1"
+            @g id:"vaquita", ->
                   @g transform:"translate(-18,-15)", ->
                     @image width:"50", height:"30", "xlink:href":pixyvaquita
-        @rect x:"0", y:"0", width:"960", height:"720", fill:"url(#grad1)"
-        @g transform:"scale(2)", ->
-          @g id:"sea", transform:"translate(240,180)", ->
-            @use "xlink:href":"#vaquita"
+          @rect x:"0", y:"0", width:"960", height:"720", fill:"url(#grad1)"
+          @g transform:"scale(2)", ->
+            @g id:"sea", transform:"translate(240,180)", ->
+              @use "xlink:href":"#vaquita"
+      else
+        @canvas width:"960", height:"720", ->
       @div -> @a class:"support-vaquitas", target:"_blank", href:"index.html", "Learn about Vaquitas"
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
