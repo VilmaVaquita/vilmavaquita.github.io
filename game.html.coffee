@@ -14,6 +14,8 @@
 
 { htmlcup } = require 'htmlcup'
 
+version = "0.0.8"
+
 htmlcup[x] = htmlcup.compileTag x for x in [ "svg", "rect", "g", "ellipse", "polygon", "line", "image", "defs", "linearGradient", "stop", "use" ]
 
 title = "Vilma the Vaquita"
@@ -31,6 +33,8 @@ frames =
   _: pixyvaquita
   _v105: pixyvaquita_v105
   twistleft: datauripng "pixyvaquita_v2_twistleft.png"
+
+gameName = "Vilma the Vaquita (demo) v#{version}"
 
 useSvg = true
 
@@ -52,6 +56,8 @@ genPage = ->
         text-align: center;
         font-size: 22px;
         font-family: Helvetica;
+        color:white;
+        color:rgba(255,255,255,0.9);
       }
       .banner {
         border: 5px solid white;
@@ -60,8 +66,6 @@ genPage = ->
         margin: 1em;
       }
       p {
-        color:white;
-        color:rgba(255,255,255,0.9);
         margin-top:0.418em;
         margin-bottom:0.418em;
         margin-left:auto;
@@ -150,10 +154,10 @@ genPage = ->
       g.flipped {
         transform:scale(-1,1);
       }
-      .support-vaquitas {
+      .dim {
         opacity: 0.2;
       }
-      .support-vaquitas:hover {
+      .dim:hover {
         opacity: 1;
       }
       """
@@ -179,7 +183,10 @@ genPage = ->
               @use "xlink:href":"#_"
       else
         @canvas width:"960", height:"720", ->
-      @div -> @a class:"support-vaquitas", target:"_blank", href:"index.html", "Learn about Vaquitas"
+      @div class:"dim", ->
+        @span gameName
+        @span " - "
+        @a target:"_blank", href:"index.html", "Learn about Vaquitas"
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
     @coffeeScript ->
