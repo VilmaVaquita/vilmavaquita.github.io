@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-version = "0.0.1"
+version = "0.0.2"
 
 { htmlcup } = require 'htmlcup'
 
@@ -292,7 +292,7 @@ genPage = ->
           if (time & 0xff) is 0x00 and vaquitas.length < 4
             addVaquita()
           # s += 0.001
-          x -= vx = pressedKeys[leftKey] - pressedKeys[rightKey]
+          x -= vx = 1 # pressedKeys[leftKey] - pressedKeys[rightKey]
           y -= pressedKeys[upKey] - pressedKeys[downKey]
           if vx > 0
             scaleX = 1
