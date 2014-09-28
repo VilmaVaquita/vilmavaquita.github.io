@@ -30,6 +30,7 @@ htmlcup.html5Page ->
   @head ->
     @meta charset:"utf-8"
     @link rel:"shortcut icon", href:icon
+    @link href:'http://fonts.googleapis.com/css?family=Lobster', rel:'stylesheet', type:'text/css'
     @title title
     @style type: "text/css",
       """
@@ -41,7 +42,8 @@ htmlcup.html5Page ->
          background: #1096EE;
         text-align: center;
         font-size: 22px;
-        font-family: Helvetica;
+        font-family: 'Lobster', 'Helvetica', 'Times', serif;
+        text-shadow: 0 1px 1px blue;
       }
       .banner {
         border: 5px solid white;
@@ -58,7 +60,6 @@ htmlcup.html5Page ->
         margin-right:auto;
         width:22em;
         max-width:100%;
-        text-shadow: 0 1px 1px blue;
       }
       a {
         /*
