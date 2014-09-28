@@ -207,8 +207,8 @@ genPage = ->
             @scaleX = 1
           else if vx < 0
             @scaleX = -1
-          # @e.setAttribute "transform", "translate(#{x}, #{y}) scale(#{@scaleX}, 1)"
-          m = @m; m.e = x; m.f = y; m.a = @scaleX
+          @e.setAttribute "transform", "translate(#{x}, #{y}) scale(#{@scaleX}, 1)"
+          # m = @m; m.e = x; m.f = y; m.a = @scaleX
       sea = document.getElementById "sea"
       v = sea.firstChild
 
@@ -228,8 +228,8 @@ genPage = ->
           sea.appendChild n
           angle = Math.random() * 6.28
           vaquita = 
-            # e: n
-            m: getTransformMatrix(n)
+            e: n
+            # m: getTransformMatrix(n)
             x: Math.sin(angle) * 300
             y: Math.cos(angle) * 300
             vx: 0
@@ -271,10 +271,10 @@ genPage = ->
         scaleY = 1
 
         window.cf = currentFrame = v.href
-        transformMatrix = getTransformMatrix(v)
-        transformMatrix.a = scaleX
-        transformMatrix.e = x
-        transformMatrix.f = y
+        # transformMatrix = getTransformMatrix(v)
+        # transformMatrix.a = scaleX
+        # transformMatrix.e = x
+        # transformMatrix.f = y
 
         gameFrame = ->
           if (time & 0xff) is 0x00 and vaquitas.length < 4
@@ -286,11 +286,11 @@ genPage = ->
             scaleX = 1
           else if vx < 0
             scaleX = -1
-          # v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
-          # transform = v.transform.baseVal.getItem(0)
-          transformMatrix.a = scaleX
-          transformMatrix.e = x
-          transformMatrix.f = y
+          v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
+          # # transform = v.transform.baseVal.getItem(0)
+          # transformMatrix.a = scaleX
+          # transformMatrix.e = x
+          # transformMatrix.f = y
           if (time % 3) is 0
             if currentFrame.baseVal is "#twistleft"
               currentFrame .baseVal = "#_"

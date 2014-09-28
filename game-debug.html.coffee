@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-version = "0.0.2"
+version = "0.0.10"
 
 { htmlcup } = require 'htmlcup'
 
@@ -219,8 +219,10 @@ genPage = ->
             @scaleX = 1
           else if vx < 0
             @scaleX = -1
-          # @e.setAttribute "transform", "translate(#{x}, #{y}) scale(#{@scaleX}, 1)"
+          @e.setAttribute "transform", "translate(#{x}, #{y}) scale(#{@scaleX}, 1)"
           m = @m; m.e = x; m.f = y; m.a = @scaleX
+          # @e.transform.baseVal.consolidate()
+          # @e.transform.baseVal.initialize(@e.transform.baseVal.matrix)
       sea = document.getElementById "sea"
       v = sea.firstChild
 
@@ -240,7 +242,7 @@ genPage = ->
           sea.appendChild n
           angle = Math.random() * 6.28
           vaquita = 
-            # e: n
+            e: n
             m: getTransformMatrix(n)
             x: Math.sin(angle) * 300
             y: Math.cos(angle) * 300
@@ -292,17 +294,17 @@ genPage = ->
           if (time & 0xff) is 0x00 and vaquitas.length < 4
             addVaquita()
           # s += 0.001
-          x -= vx = 1 # pressedKeys[leftKey] - pressedKeys[rightKey]
+          x -= vx = pressedKeys[leftKey] - pressedKeys[rightKey]
           y -= pressedKeys[upKey] - pressedKeys[downKey]
           if vx > 0
             scaleX = 1
           else if vx < 0
             scaleX = -1
-          # v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
+          v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
           # transform = v.transform.baseVal.getItem(0)
-          transformMatrix.a = scaleX
-          transformMatrix.e = x
-          transformMatrix.f = y
+          # transformMatrix.a = scaleX
+          # transformMatrix.e = x
+          # transformMatrix.f = y
           if (time % 3) is 0
             if currentFrame.baseVal is "#twistleft"
               currentFrame .baseVal = "#_"
