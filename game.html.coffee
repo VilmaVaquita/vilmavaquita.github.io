@@ -26,8 +26,10 @@ datauriicon = (x)-> datauri "image/x-icon", x
 
 icon = datauriicon "vaquita.ico"
 pixyvaquita = datauripng "pixyvaquita_v2.png"
+pixyvaquita_v105 = datauripng "pixyvaquita_v2.png"
 frames =
   _: pixyvaquita
+  _v105: pixyvaquita
   twistleft: datauripng "pixyvaquita_v2_twistleft.png"
 
 useSvg = true
@@ -257,12 +259,17 @@ genPage = ->
 
       do (x = 0, y = 0)->
         time = 0
+        vx = 0
+        vy = 0
+        ax = 0
+        ay = 0
         # s = 1
         # x = 0
         # y = 0
         scaleX = 1
         scaleY = 1
 
+        window.cf = currentFrame = v.href
         transformMatrix = getTransformMatrix(v)
         transformMatrix.a = scaleX
         transformMatrix.e = x
@@ -283,6 +290,11 @@ genPage = ->
           transformMatrix.a = scaleX
           transformMatrix.e = x
           transformMatrix.f = y
+          if (time % 3) is 0
+            if currentFrame.baseVal is "#twistleft"
+              currentFrame .baseVal = "#_"
+            else if vx isnt 0
+              currentFrame.baseVal = "#twistleft"
           # transformList.initialize(transform)
           vq.update() for vq in vaquitas
           time++
