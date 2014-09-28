@@ -26,10 +26,10 @@ datauriicon = (x)-> datauri "image/x-icon", x
 
 icon = datauriicon "vaquita.ico"
 pixyvaquita = datauripng "pixyvaquita_v2.png"
-pixyvaquita_v105 = datauripng "pixyvaquita_v2.png"
+pixyvaquita_v105 = datauripng "pixyvaquita_v105_v.png"
 frames =
   _: pixyvaquita
-  _v105: pixyvaquita
+  _v105: pixyvaquita_v105
   twistleft: datauripng "pixyvaquita_v2_twistleft.png"
 
 useSvg = true
@@ -220,9 +220,10 @@ genPage = ->
           transformListXX.initialize(transformXX)
           transformXX.matrix
 
-      cloneVaquita = ->
+      addVaquita = ->
           n = v.cloneNode()
           n.setAttribute "opacity", "0.5"
+          n.href.baseVal = "#_v105" if Math.random(0) > 0.5
           # n.setAttribute "transform", ""
           sea.appendChild n
           angle = Math.random() * 6.28
@@ -245,7 +246,7 @@ genPage = ->
       usedKeys = [ leftKey, upKey, rightKey, downKey ]
 
       keyDownActions =
-        32: cloneVaquita
+        32: addVaquita
 
       pressedKeys = { }
       pressedKeys[k] = 0 for k in usedKeys
@@ -277,7 +278,7 @@ genPage = ->
 
         gameFrame = ->
           if (time & 0xff) is 0x00 and vaquitas.length < 4
-            cloneVaquita()
+            addVaquita()
           # s += 0.001
           x -= vx = pressedKeys[leftKey] - pressedKeys[rightKey]
           y -= pressedKeys[upKey] - pressedKeys[downKey]
