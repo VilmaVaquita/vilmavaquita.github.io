@@ -16,16 +16,19 @@
 
 htmlcup[x] = htmlcup.compileTag x for x in [ "svg", "rect", "g", "ellipse", "polygon", "line", "image", "defs", "linearGradient", "stop", "use" ]
 
-title = "V the Vaquita"
+title = "Vilma the Vaquita"
 
 fs = require 'fs'
 
-datauri = (t, x)-> "data:#{x};base64,#{new Buffer(x).toString("base64")}"
+datauri = (t, x)-> "data:#{t};base64,#{new Buffer(fs.readFileSync(x)).toString("base64")}"
+datauripng = (x)-> datauri "image/png", x
+datauriicon = (x)-> datauri "image/x-icon", x
 
-icon = "vaquita.ico"
-icon = datauri("image/x-icon", fs.readFileSync(icon))
-pixyvaquita = "pixyvaquita.png"
-pixyvaquita = "data:image/png;base64," + (new Buffer(fs.readFileSync(pixyvaquita))).toString("base64")
+icon = datauriicon "vaquita.ico"
+pixyvaquita = datauripng "pixyvaquita_v2.png"
+frames =
+  _: pixyvaquita
+  twistleft: datauripng "pixyvaquita_v2_twistleft.png"
 
 useSvg = true
 
@@ -164,13 +167,14 @@ genPage = ->
               @stop offset:"50%", style:"stop-color:rgb(0,80,240);stop-opacity:1"
               @stop offset:"75%", style:"stop-color:rgb(0,0,180);stop-opacity:1"
               @stop offset:"100%", style:"stop-color:rgb(0,0,0);stop-opacity:1"
-            @g id:"vaquita", ->
+            for k,v of frames
+              @g id:k, ->
                   @g transform:"translate(-18,-15)", ->
-                    @image width:"50", height:"30", "xlink:href":pixyvaquita
+                    @image width:"50", height:"30", "xlink:href":v
           @rect x:"0", y:"0", width:"960", height:"720", fill:"url(#grad1)"
           @g transform:"scale(2)", ->
             @g id:"sea", transform:"translate(240,180)", ->
-              @use "xlink:href":"#vaquita"
+              @use "xlink:href":"#_"
       else
         @canvas width:"960", height:"720", ->
       @div -> @a class:"support-vaquitas", target:"_blank", href:"index.html", "Learn about Vaquitas"

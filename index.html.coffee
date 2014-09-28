@@ -18,10 +18,13 @@ title = "Vaquitas need you!"
 
 fs = require 'fs'
 
-icon = "vaquita.ico"
-icon = "data:image/x-icon;base64," + (new Buffer(fs.readFileSync(icon))).toString("base64")
-pixyvaquita = "pixyvaquita.png"
-pixyvaquita = "data:image/png;base64," + (new Buffer(fs.readFileSync(pixyvaquita))).toString("base64")
+datauri = (t, x)-> "data:#{t};base64,#{new Buffer(fs.readFileSync(x)).toString("base64")}"
+datauripng = (x)-> datauri "image/png", x
+datauriicon = (x)-> datauri "image/x-icon", x
+
+icon = datauriicon "vaquita.ico"
+pixyvaquita = datauripng "pixyvaquita_v2.png"
+pixyvaquita2 = datauripng "pixyvaquita_v105_v.png"
 
 htmlcup.html5Page ->
   @head ->
@@ -108,6 +111,9 @@ htmlcup.html5Page ->
         vertical-align:middle;
         max-width:100%;
       }
+      .dynamic-section.dynsec-vertical {
+        display: block;
+      }
       .flip-lr {
         -moz-transform:     scaleX(-1);
         -o-transform:       scaleX(-1);
@@ -132,8 +138,6 @@ htmlcup.html5Page ->
      @section class:"centered", ->
       @section class:"dynamic-section", ->
         @img class:"banner", src:"vaquita1.jpg", title:"This vaquita was set free by a mysterious artist who prefers to stay anonymous ☺"
-        @br()
-        @img src:pixyvaquita, title:"Please be our friend!", width:"150", height:"90", class:"flip-lr pixelart"
       @section class:"dynamic-section", ->
         @p "Please don't kill this baby!"
         @p ->
@@ -145,9 +149,14 @@ htmlcup.html5Page ->
         @p class:"petition", ->
           @span 'Petition you can sign: '
           @a
+            target:"_blank"
             # href: 'http://www.thepetitionsite.com/569/482/287/extend-protections-for-critically-endangered-vaquita-porpoises/', "Extend Protections for Critically Endangered Vaquita Porpoises"
             href:'http://act.oceanconservancy.org/site/MessageViewer?dlv_id=41469&em_id=30824.0&',
             "Ocean Conservancy .org: Save the vaquita from extinction!"
             
         @p ->
           @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', "Commemorative video of a baby Vaquita"
+      @section class:"dynamic-section dynsec-vertical", ->
+        @img src:pixyvaquita, title:"Please be our friend!", width:"150", height:"90", class:"flip-lr pixelart"
+        @a href:"game.html", "Vilma the Vaquita - demo game"
+        @img src:pixyvaquita2, title:"Play with us!", width:"150", height:"90", class:"pixelart"
