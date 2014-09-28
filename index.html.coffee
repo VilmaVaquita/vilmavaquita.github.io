@@ -30,7 +30,6 @@ htmlcup.html5Page ->
   @head ->
     @meta charset:"utf-8"
     @link rel:"shortcut icon", href:icon
-    @link href:'http://fonts.googleapis.com/css?family=Lobster', rel:'stylesheet', type:'text/css'
     @title title
     @style type: "text/css",
       """
@@ -42,7 +41,7 @@ htmlcup.html5Page ->
          background: #1096EE;
         text-align: center;
         font-size: 22px;
-        font-family: 'Lobster', 'Helvetica', 'Times', serif;
+        font-family: 'Helvetica', 'Times', serif;
         text-shadow: 0 1px 1px blue;
       }
       .banner {
@@ -156,7 +155,7 @@ htmlcup.html5Page ->
             "Ocean Conservancy .org: Save the vaquita from extinction!"
             
         @p ->
-          @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', "Commemorative video of a baby Vaquita"
+          @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', "Video of a baby Vaquita"
       @section class:"dynamic-section dynsec-vertical", ->
         @img src:pixyvaquita, title:"Please be our friend!", width:"150", height:"90", class:"flip-lr pixelart"
         @a href:"game.html", "Vilma the Vaquita - demo game"
