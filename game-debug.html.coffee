@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+version = "0.0.1"
+
 { htmlcup } = require 'htmlcup'
 
 htmlcup[x] = htmlcup.compileTag x for x in [ "svg", "rect", "g", "ellipse", "polygon", "line", "image", "defs", "linearGradient", "stop", "use" ]
@@ -150,16 +152,17 @@ genPage = ->
       g.flipped {
         transform:scale(-1,1);
       }
-      .support-vaquitas {
+      .dimmed {
         opacity: 0.2;
       }
-      .support-vaquitas:hover {
+      .dimmed:hover {
         opacity: 1;
       }
       """
   @body ->
     @div class:"centering page", ->
      @div class:"centered", ->
+      @div -> @a class:"dimmed", "Vilma the Vaquita - v#{version}"
       if useSvg
         @svg id:"sea-svgroot", width:"960", height:"720", ->
           @defs ->
@@ -179,7 +182,7 @@ genPage = ->
               @use "xlink:href":"#_"
       else
         @canvas width:"960", height:"720", ->
-      @div -> @a class:"support-vaquitas", target:"_blank", href:"index.html", "Learn about Vaquitas"
+      @div -> @a class:"dimmed", target:"_blank", href:"index.html", "Learn about Vaquitas"
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
     @coffeeScript ->
