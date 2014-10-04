@@ -14,11 +14,11 @@
 
 { htmlcup } = require 'htmlcup'
 
-version = "0.0.8"
+version = "0.0.12"
 
 htmlcup[x] = htmlcup.compileTag x for x in [ "svg", "rect", "g", "ellipse", "polygon", "line", "image", "defs", "linearGradient", "stop", "use" ]
 
-title = "Vilma the Vaquita"
+title = "Vilma the Vaquita Demo"
 
 fs = require 'fs'
 
@@ -34,7 +34,7 @@ frames =
   _v105: pixyvaquita_v105
   twistleft: datauripng "pixyvaquita_v2_twistleft.png"
 
-gameName = "Vilma the Vaquita (demo) v#{version}"
+gameName = "#{title} v#{version}"
 
 useSvg = true
 
@@ -258,12 +258,14 @@ genPage = ->
       pressedKeys = { }
       pressedKeys[k] = 0 for k in usedKeys
 
-      window.addEventListener 'keydown',  (event)->
+      keydown = (event)->
         code = event.keyCode
         keyDownActions[ code ]?(event)
         pressedKeys[ code ] = 1
-      window.addEventListener 'keyup',    (event)->
+      keydown = (event)->
         pressedKeys[ event.keyCode ] = 0
+      window.addEventListener 'keydown', keydown, true
+      window.addEventListener 'keyup', keyup, true
 
       do (x = 0, y = 0)->
         time = 0
