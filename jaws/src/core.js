@@ -38,7 +38,6 @@ var jaws = (function(jaws) {
   //jaws.Parallax = function() { throw("To use jaws.Parallax() you need to include src/extras/parallax.js") }
   //jaws.QuadTree = function() { throw("To use QuadTree() you need to include src/extras/quadtree.js") }
   //jaws.PixelMap = function() { throw("To use PixelMap() you need to include src/extras/pixel_map.js") }
-  //jaws.TileMap = function() { throw("To use TileMap() you need to include src/extras/tile_map.js") }
   jaws.SpriteList = function() { throw("To use SpriteList() you need to include src/extras/sprite_list.js") }
   jaws.Audio = function() { throw("To use jaws.Audio() you need to include src/extras/audio.js") }
 
@@ -66,7 +65,7 @@ var jaws = (function(jaws) {
    * If a global property is already taken, a warning will be written to jaws log.
    */
   jaws.unpack = function() {
-    var make_global = ["Sprite", "SpriteList", "Animation", "Viewport", "SpriteSheet", "Parallax", "TileMap", "pressed", "QuadTree"];
+    var make_global = ["Sprite", "SpriteList", "Animation", "Viewport", "SpriteSheet", "Parallax", "pressed", "QuadTree"];
 
     make_global.forEach(function(item) {
       if (window[item]) {
