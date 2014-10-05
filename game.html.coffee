@@ -1,24 +1,16 @@
 # Copyright (c) 2013, 2014 Michele Bini
 
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the version 3 of the GNU General Public License
-# as published by the Free Software Foundation.
+# A game featuring a Vaquita, the smallest, most endagered marine cetacean
 
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
+# This program is available under the terms of the MIT License
 
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+version = "0.1.54"
 
 { htmlcup } = require 'htmlcup'
 
-version = "0.0.12"
-
 htmlcup[x] = htmlcup.compileTag x for x in [ "svg", "rect", "g", "ellipse", "polygon", "line", "image", "defs", "linearGradient", "stop", "use" ]
 
-title = "Vilma the Vaquita Demo"
+title = "Vilma the Vaquita"
 
 fs = require 'fs'
 
@@ -36,7 +28,7 @@ frames =
 
 gameName = "#{title} v#{version}"
 
-useSvg = true
+htmlcup.jsFile = (f)-> @script type:"text/javascript", (fs.readFileSync(f).toString())
 
 genPage = ->
  htmlcup.html5Page ->
@@ -58,6 +50,7 @@ genPage = ->
         font-family: Helvetica;
         color:white;
         color:rgba(255,255,255,0.9);
+        margin:0;
       }
       .banner {
         border: 5px solid white;
@@ -65,14 +58,16 @@ genPage = ->
         box-shadow: 0 2px 4px blue;
         margin: 1em;
       }
-      p {
+      footer, p {
         margin-top:0.418em;
         margin-bottom:0.418em;
         margin-left:auto;
         margin-right:auto;
+        text-shadow: 0 1px 1px blue;
+      }
+      p {
         width:22em;
         max-width:100%;
-        text-shadow: 0 1px 1px blue;
       }
       a {
         /*
@@ -164,8 +159,12 @@ genPage = ->
   @body ->
     @div class:"centering page", ->
      @div class:"centered", ->
-      if useSvg
-        @svg id:"sea-svgroot", width:"960", height:"720", ->
+      @div style:"visibility:hidden;position:absolute", ->
+        @img id:"pixyvaquita", src:pixyvaquita
+        @img id:"pixyvaquita_105", src:frames._v105
+        @img id:"pixyvaquita_twistleft", src:frames.twistleft
+      @div style:"position:relative", ->
+        @svg id:"sea-svgroot", width:"960", height:"720", style:"position:absolute;opacity:0.9;z-index:-1000", ->
           @defs ->
             @linearGradient id:"grad1", x1:"0%", y1:"0%", x2:"0%", y2:"100%", ->
               @stop offset:"0%", style:"stop-color:rgb(255,255,255);stop-opacity:1"
@@ -173,142 +172,156 @@ genPage = ->
               @stop offset:"50%", style:"stop-color:rgb(0,80,240);stop-opacity:1"
               @stop offset:"75%", style:"stop-color:rgb(0,0,180);stop-opacity:1"
               @stop offset:"100%", style:"stop-color:rgb(0,0,0);stop-opacity:1"
-            for k,v of frames
-              @g id:k, ->
-                  @g transform:"translate(-18,-15)", ->
-                    @image width:"50", height:"30", "xlink:href":v
           @rect x:"0", y:"0", width:"960", height:"720", fill:"url(#grad1)"
-          @g transform:"scale(2)", ->
-            @g id:"sea", transform:"translate(240,180)", ->
-              @use "xlink:href":"#_"
-      else
-        @canvas width:"960", height:"720", ->
-      @div class:"dim", ->
+        @canvas width:"960", height:"720",  ->
+      @footer class:"dim", ->
         @span gameName
         @span " - "
         @a target:"_blank", href:"index.html", "Learn about Vaquitas"
+        @span id:"fps"
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
-    @coffeeScript ->
-      svgroot = document.getElementById("sea-svgroot")
+    @script type:"text/javascript", "__hasProp = {}.hasOwnProperty; __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };"
+    @jsFile "jaws/jaws-min.js"
+    # @jsFile "jaws-assets-named.js"
+    @coffeeScript -> do ->
+      # svgroot = document.getElementById("sea-svgroot")
+
+      # reportErrors = (x)->
+      #   try
+      #     x()
+      #   catch error
+      #     try
+      #       alert error.toString()
+      #     catch error2
+      #       alert error
 
       screen_x1 = 240
       screen_y1 = 180
-      vaquitas = [ ]
-      vaquitaObj =
-        update: (x, y)->
-          if !window.abcd
-            window.abcd = 1
-          vx = @vx + Math.floor(Math.random()*3) - 1
-          vy = @vy + Math.floor(Math.random()*3) - 1
-          x = @x
-          y = @y
-          rx = 0.5 * x / screen_x1
-          ry = 0.5 * y / screen_y1
-          if (s = vx * vx + vy * vy * 2) > 6
-            vx = Math.round(vx * 0.9 + rx)
-            vy = Math.round(vy * 0.9 + ry)
-          @x = x -= @vx = vx
-          @y = y -= @vy = vy
-          if vx > 0
-            @scaleX = 1
-          else if vx < 0
-            @scaleX = -1
-          @e.setAttribute "transform", "translate(#{x}, #{y}) scale(#{@scaleX}, 1)"
-          # m = @m; m.e = x; m.f = y; m.a = @scaleX
-      sea = document.getElementById "sea"
-      v = sea.firstChild
+      
+      jaws.onload = ->
+        class Demo
+          { left: leftKey, right: rightKey, up: upKey, down: downKey, space: spaceKey } = jaws.keyCodes
+          Sprite = class extends jaws.Sprite
+            # caller needs to set lr for flip center
+            constructor: ->
+              super
+                image: @image
+                x: 0
+                y: 0
+                scale: 2
+          FlippableSprite = class extends Sprite
+            draw: ->
+              @flipped = @lr >= 0
+              @x = (screen_x1 + @px + @lr) * 2
+              @y = (screen_y1 + @py - 5) * 2
+              super()
+          Vaquita = class extends FlippableSprite
+            constructor: ->
+              @lr = 18
+              super()
+            draw: ->
+                  if @vx < 0
+                    @lr = - 18
+                  else if @vx > 0
+                    @lr = 18
+                  super()
+          AiVaquita = class extends Vaquita
+            constructor: ->
+              @image = if Math.random() > 0.5 then pixyvaquita_105 else pixyvaquita
+              super()
+            draw: ->
+                  vx = @vx + Math.floor(Math.random()*3) - 1
+                  vy = @vy + Math.floor(Math.random()*3) - 1
+                  x = @px
+                  y = @py
+                  rx = 0.5 * x / screen_x1
+                  ry = 0.5 * y / screen_y1
+                  if (s = vx * vx + vy * vy * 2) > 6
+                    vx = Math.round(vx * 0.9 - rx)
+                    vy = Math.round(vy * 0.9 - ry)
+                  @px += @vx = vx
+                  @py += @vy = vy
+                  super()
+          HeroVaquita = class extends Vaquita
+            twistleft = pixyvaquita_twistleft
+            constructor: ->
+              @image = pixyvaquita
+              @time = 0
+              super()
+            draw: ->
+              @vx = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0)
+              @vy = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0)
+              @px += @vx
+              @py += @vy
+              if (@time++ % 3) is 0
+                if @image is twistleft
+                  @image = pixyvaquita
+                else if @vx isnt 0
+                  @image = twistleft
+              super()
+          addVaquita: ->
+              # n = v.cloneNode()
+              # n.setAttribute "opacity", "0.5"
+              # n.href.baseVal = "#_v105" if Math.random(0) > 0.5
+              # n.setAttribute "transform", ""
+              # sea.appendChild n
+              angle = Math.random() * 6.28
+              v = new AiVaquita
+              v.vx = 0
+              v.vy = 0
+              v.px = Math.floor(Math.sin(angle) * 300)
+              v.py = Math.floor(Math.cos(angle) * 300)
+              v.draw()
+              # vaquita.update()
+              @vaquitas.push v
+          constructor: (@vaquitas = [])->
+          setup: ->
+            v = new HeroVaquita # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
+            v.px = 0
+            v.py = 0
+            v.vx = 0
+            v.vy = 0
+            @vaquitas.push v
+          draw: ->
+            jaws.clear()
+            @addVaquita() if @vaquitas.length < 7 or jaws.pressed[spaceKey]
+            v.draw() for v in @vaquitas
+            if (@gameloop.ticks & 0xff) is 0xff
+              fps.innerHTML = " - #{@gameloop.fps} fps"
+        if true
+          jaws.init()
+          jaws.setupInput();
+          game = new Demo
+          gameloop = new jaws.GameLoop(game, { fps:24 })
+          (game.gameloop = gameloop).start()
+        else
+          jaws.start Demo, fps:25
 
-      getTransformMatrix = (el)->
-          transformListXX = el.transform.baseVal
-          transformMatrixXX = svgroot.createSVGMatrix()
-          transformXX = svgroot.createSVGTransform()
-          transformXX.setMatrix(transformMatrixXX)
-          transformListXX.initialize(transformXX)
-          transformXX.matrix
-
-      addVaquita = ->
-          n = v.cloneNode()
-          n.setAttribute "opacity", "0.5"
-          n.href.baseVal = "#_v105" if Math.random(0) > 0.5
-          # n.setAttribute "transform", ""
-          sea.appendChild n
-          angle = Math.random() * 6.28
-          vaquita = 
-            e: n
-            # m: getTransformMatrix(n)
-            x: Math.sin(angle) * 300
-            y: Math.cos(angle) * 300
-            vx: 0
-            vy: 0
-            scaleX: 1
-            __proto__: vaquitaObj
-          vaquita.update()
-          vaquitas.push vaquita
-
-      leftKey = 37
-      upKey = 38
-      rightKey = 39
-      downKey = 40
-      usedKeys = [ leftKey, upKey, rightKey, downKey ]
-
-      keyDownActions =
-        32: addVaquita
-
-      pressedKeys = { }
-      pressedKeys[k] = 0 for k in usedKeys
-
-      keydown = (event)->
-        code = event.keyCode
-        keyDownActions[ code ]?(event)
-        pressedKeys[ code ] = 1
-      keydown = (event)->
-        pressedKeys[ event.keyCode ] = 0
-      window.addEventListener 'keydown', keydown, true
-      window.addEventListener 'keyup', keyup, true
-
-      do (x = 0, y = 0)->
-        time = 0
-        vx = 0
-        vy = 0
-        ax = 0
-        ay = 0
-        # s = 1
-        # x = 0
-        # y = 0
-        scaleX = 1
-        scaleY = 1
-
-        window.cf = currentFrame = v.href
-        # transformMatrix = getTransformMatrix(v)
-        # transformMatrix.a = scaleX
-        # transformMatrix.e = x
-        # transformMatrix.f = y
-
-        gameFrame = ->
-          if (time & 0xff) is 0x00 and vaquitas.length < 4
-            addVaquita()
-          # s += 0.001
-          x -= vx = pressedKeys[leftKey] - pressedKeys[rightKey]
-          y -= pressedKeys[upKey] - pressedKeys[downKey]
-          if vx > 0
-            scaleX = 1
-          else if vx < 0
-            scaleX = -1
-          v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
-          # # transform = v.transform.baseVal.getItem(0)
-          # transformMatrix.a = scaleX
-          # transformMatrix.e = x
-          # transformMatrix.f = y
-          if (time % 3) is 0
-            if currentFrame.baseVal is "#twistleft"
-              currentFrame .baseVal = "#_"
-            else if vx isnt 0
-              currentFrame.baseVal = "#twistleft"
-          # transformList.initialize(transform)
-          vq.update() for vq in vaquitas
-          time++
+      #   gameFrame = -> reportErrors ->
+      #     if (time & 0xff) is 0x00 and vaquitas.length < 4
+      #       addVaquita()
+      #     # s += 0.001
+      #     x -= vx = pressedKeys[leftKey] - pressedKeys[rightKey]
+      #     y -= pressedKeys[upKey] - pressedKeys[downKey]
+      #     if vx > 0
+      #       scaleX = 1
+      #     else if vx < 0
+      #       scaleX = -1
+      #     v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
+      #     # transform = v.transform.baseVal.getItem(0)
+      #     # transformMatrix.a = scaleX
+      #     # transformMatrix.e = x
+      #     # transformMatrix.f = y
+      #     if (time % 3) is 0
+      #       if currentFrame.baseVal is "#twistleft"
+      #         currentFrame .baseVal = "#_"
+      #       else if vx isnt 0
+      #         currentFrame.baseVal = "#twistleft"
+      #     # transformList.initialize(transform)
+      #     vq.update() for vq in vaquitas
+      #     time++
         
-        setInterval gameFrame, 40
+      #   # setInterval gameFrame, 40
 
 genPage()

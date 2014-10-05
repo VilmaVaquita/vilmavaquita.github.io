@@ -1,3 +1,6 @@
 [submodule "htmlcup"]
 	path = htmlcup
 	url = ./htmlcup
+[submodule "jaws"]
+	path = jaws
+	url = https://github.com/ippa/jaws.git

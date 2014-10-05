@@ -2,62 +2,18 @@ var jaws = (function(jaws) {
 
   var pressed_keys = {}
   var previously_pressed_keys = {}
-  var keycode_to_string = []
+  var keyCodes = {"0":"48","1":"49","2":"50","3":"51","4":"52","5":"53","6":"54","7":"55","8":"56","9":"57","backspace":"8","tab":"9","enter":"13","shift":"16","ctrl":"17","alt":"18","pause":"19","caps_lock":"20","esc":"27","space":"32","page_up":"33","page_down":"34","end":"35","home":"36","left":"37","up":"38","right":"39","down":"40","insert":"45","delete":"46","a":"65","b":"66","c":"67","d":"68","e":"69","f":"70","g":"71","h":"72","i":"73","j":"74","k":"75","l":"76","m":"77","n":"78","o":"79","p":"80","q":"81","r":"82","s":"83","t":"84","u":"85","v":"86","w":"87","x":"88","y":"89","z":"90","windows_left":"91","windows_right":"92","select":"93","numpad0":"96","numpad1":"97","numpad2":"98","numpad3":"99","numpad4":"100","numpad5":"101","numpad6":"102","numpad7":"103","numpad8":"104","numpad9":"105","asterisk":"106","plus":"107","minus":"109","decimal_point":"110","divide":"111","f1":"112","f2":"113","f3":"114","f4":"115","f5":"116","f6":"117","f7":"118","f8":"119","f9":"120","numlock":"144","scrollock":"145","semicolon":"186","equals":"187","comma":"188","dash":"189","period":"190","slash":"191","grave_accent":"192","open_bracket":"219","backslash":"220","close_bracket":"221","single_quote":"222"};
+  var keycodeNames = {"8":"backspace","9":"tab","13":"enter","16":"shift","17":"ctrl","18":"alt","19":"pause","20":"caps_lock","27":"esc","32":"space","33":"page_up","34":"page_down","35":"end","36":"home","37":"left","38":"up","39":"right","40":"down","45":"insert","46":"delete","48":"0","49":"1","50":"2","51":"3","52":"4","53":"5","54":"6","55":"7","56":"8","57":"9","65":"a","66":"b","67":"c","68":"d","69":"e","70":"f","71":"g","72":"h","73":"i","74":"j","75":"k","76":"l","77":"m","78":"n","79":"o","80":"p","81":"q","82":"r","83":"s","84":"t","85":"u","86":"v","87":"w","88":"x","89":"y","90":"z","91":"windows_left","92":"windows_right","93":"select","96":"numpad0","97":"numpad1","98":"numpad2","99":"numpad3","100":"numpad4","101":"numpad5","102":"numpad6","103":"numpad7","104":"numpad8","105":"numpad9","106":"asterisk","107":"plus","109":"minus","110":"decimal_point","111":"divide","112":"f1","113":"f2","114":"f3","115":"f4","116":"f5","117":"f6","118":"f7","119":"f8","120":"f9","144":"numlock","145":"scrollock","186":"semicolon","187":"equals","188":"comma","189":"dash","190":"period","191":"slash","192":"grave_accent","219":"open_bracket","220":"backslash","221":"close_bracket","222":"single_quote"};
   var on_keydown_callbacks = []
   var on_keyup_callbacks = []
   var mousebuttoncode_to_string = []
   var ie_mousebuttoncode_to_string = []
+  var prevent_default_keys = []
  
 /** @private
  * Map all javascript keycodes to easy-to-remember letters/words
  */
 jaws.setupInput = function() {
-  var k = []
-  
-  k[8] = "backspace"
-  k[9] = "tab"
-  k[13] = "enter"
-  k[16] = "shift"
-  k[17] = "ctrl"
-  k[18] = "alt"
-  k[19] = "pause"
-  k[20] = "capslock"
-  k[27] = "esc"
-  k[32] = "space"
-  k[33] = "pageup"
-  k[34] = "pagedown"
-  k[35] = "end"
-  k[36] = "home"
-  k[37] = "left"
-  k[38] = "up"
-  k[39] = "right"
-  k[40] = "down" 
-  k[45] = "insert"
-  k[46] = "delete"
-  
-  k[91] = "left_window_key leftwindowkey"
-  k[92] = "right_window_key rightwindowkey"
-  k[93] = "select_key selectkey"
-  k[106] = "multiply *"
-  k[107] = "add plus +"
-  k[109] = "subtract minus -"
-  k[110] = "decimalpoint"
-  k[111] = "divide /"
-  
-  k[144] = "numlock"
-  k[145] = "scrollock"
-  k[186] = "semicolon ;"
-  k[187] = "equalsign ="
-  k[188] = "comma ,"
-  k[189] = "dash -"
-  k[190] = "period ."
-  k[191] = "forwardslash /"
-  k[192] = "graveaccent `"
-  k[219] = "openbracket ["
-  k[220] = "backslash \\"
-  k[221] = "closebracket ]"
-  k[222] = "singlequote '"
-  
   var m = []
   
   m[0] = "left_mouse_button"
@@ -72,20 +28,8 @@ jaws.setupInput = function() {
   mousebuttoncode_to_string = m
   ie_mousebuttoncode_to_string = ie_m;
 
-
-  var numpadkeys = ["numpad0","numpad1","numpad2","numpad3","numpad4","numpad5","numpad6","numpad7","numpad8","numpad9"]
-  var fkeys = ["f1","f2","f3","f4","f5","f6","f7","f8","f9"]
-  var numbers = ["0","1","2","3","4","5","6","7","8","9"]
-  var letters = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
-  for(var i = 0; numbers[i]; i++)     { k[48+i] = numbers[i] }
-  for(var i = 0; letters[i]; i++)     { k[65+i] = letters[i] }
-  for(var i = 0; numpadkeys[i]; i++)  { k[96+i] = numpadkeys[i] }
-  for(var i = 0; fkeys[i]; i++)       { k[112+i] = fkeys[i] }
-  
-  keycode_to_string = k
-
-  window.addEventListener("keydown", handleKeyDown)
-  window.addEventListener("keyup", handleKeyUp)
+  window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("keyup", handleKeyUp);
 
   var jawswindow = jaws.canvas || jaws.dom
   jawswindow.addEventListener("mousedown", handleMouseDown, false);
@@ -103,57 +47,53 @@ jaws.setupInput = function() {
  * Reset input-hash. Called when game is blurred so a key-controlled player doesn't keep on moving when the game isn't focused.
  */
 function resetPressedKeys(e) {
-  pressed_keys = {};
+  for (var x in pressed_keys) {
+    delete pressed_keys[x];
+  }
 }
 
 /** @private
  * handle event "onkeydown" by remembering what key was pressed
  */
 function handleKeyUp(e) {
-  event = (e) ? e : window.event
-  var human_names = keycode_to_string[event.keyCode];
-  if (human_names == null) return;
-  human_names = human_names.split(" ");
-  human_names.forEach( function(human_name) {
-   pressed_keys[human_name] = false
-    if(on_keyup_callbacks[human_name]) { 
-      on_keyup_callbacks[human_name](human_name)
-      e.preventDefault()
-    }
-    if(prevent_default_keys[human_name]) { e.preventDefault() }
-  });
+  /* event = (e) ? e : window.event; */ /* Seems unnecessary because e is assumed to be non-null later */
+  var code = code = e.keyCode;
+  pressed_keys[code] = false;
+  if (on_keyup_callbacks[code]) { 
+    on_keyup_callbacks[code](code)
+    e.preventDefault()
+  } else if (prevent_default_keys[code]) {
+    e.preventDefault();
+  }
 }
 
 /** @private
  * handle event "onkeydown" by remembering what key was un-pressed
  */
 function handleKeyDown(e) {
-  event = (e) ? e : window.event  
-  var human_names = keycode_to_string[event.keyCode];
-  if (human_names == null) return;
-  human_names = human_names.split(" ");
-  human_names.forEach( function(human_name) {
-    pressed_keys[human_name] = true
-    if(on_keydown_callbacks[human_name]) { 
-      on_keydown_callbacks[human_name](human_name)
-      e.preventDefault()
-    }
-    if(prevent_default_keys[human_name]) { e.preventDefault() }
-  });
+  /* event = (e) ? e : window.event; */ /* Seems unnecessary because e is assumed to be non-null later */
+  var code = code = e.keyCode;
+  pressed_keys[code] = true;
+  if (on_keydown_callbacks[code]) { 
+      on_keydown_callbacks[code](code);
+      e.preventDefault();
+  } else if (prevent_default_keys[code]) {
+    e.preventDefault();
+  }
 }
 /** @private
  * handle event "onmousedown" by remembering what button was pressed
  */
 function handleMouseDown(e) {
-  event = (e) ? e : window.event  
-  var human_name = mousebuttoncode_to_string[event.button] // 0 1 2
+  /* event = (e) ? e : window.event; */  /* Seems unnecessary because e is assumed to be non-null later */
+  var human_name = mousebuttoncode_to_string[e.button]; // 0 1 2
   if (navigator.appName == "Microsoft Internet Explorer"){
-	  human_name = ie_mousebuttoncode_to_string[event.button];
+	  human_name = ie_mousebuttoncode_to_string[e.button];
   }
   pressed_keys[human_name] = true
   if(on_keydown_callbacks[human_name]) { 
-    on_keydown_callbacks[human_name](human_name)
-    e.preventDefault()
+    on_keydown_callbacks[human_name](human_name);
+    e.preventDefault();
   }
 }
 
@@ -162,16 +102,16 @@ function handleMouseDown(e) {
  * handle event "onmouseup" by remembering what button was un-pressed
  */
 function handleMouseUp(e) {
-  event = (e) ? e : window.event
-  var human_name = mousebuttoncode_to_string[event.button]  
+  /* event = (e) ? e : window.event; */  /* Seems unnecessary because e is assumed to be non-null later */
+  var human_name = mousebuttoncode_to_string[e.button]  
 
   if (navigator.appName == "Microsoft Internet Explorer"){
-	  human_name = ie_mousebuttoncode_to_string[event.button];
+	  human_name = ie_mousebuttoncode_to_string[e.button];
   }
-  pressed_keys[human_name] = false
+  pressed_keys[human_name] = false;
   if(on_keyup_callbacks[human_name]) { 
-    on_keyup_callbacks[human_name](human_name)
-    e.preventDefault()
+    on_keyup_callbacks[human_name](human_name);
+    e.preventDefault();
   }
 }
 
@@ -179,7 +119,7 @@ function handleMouseUp(e) {
  * handle event "touchstart" by remembering what button was pressed
  */
 function handleTouchStart(e) {
-	event = (e) ? e : window.event  
+        /* event = (e) ? e : window.event; */  /* Seems unnecessary because e is assumed to be non-null later */
 	pressed_keys["left_mouse_button"] = true
 	jaws.mouse_x = e.touches[0].pageX - jaws.canvas.offsetLeft;
 	jaws.mouse_y = e.touches[0].pageY - jaws.canvas.offsetTop;
@@ -190,14 +130,11 @@ function handleTouchStart(e) {
  * handle event "touchend" by remembering what button was pressed
  */
 function handleTouchEnd(e) {
-  event = (e) ? e : window.event  
-  pressed_keys["left_mouse_button"] = false
-	jaws.mouse_x = undefined;
-	jaws.mouse_y = undefined;
-
+  pressed_keys["left_mouse_button"] = false;
+  jaws.mouse_x = undefined;
+  jaws.mouse_y = undefined;
 }
 
-var prevent_default_keys = []
 /** 
  * Prevents default browseraction for given keys.
  * @example
@@ -205,62 +142,39 @@ var prevent_default_keys = []
  */
 jaws.preventDefaultKeys = function(array_of_strings) {
   var list = arguments;
-  if(list.length == 1 && jaws.isArray(list[0])) list = list[0];
-
   for(var i=0; i < list.length; i++) {
     prevent_default_keys[list[i]] = true;
   }
 }
 
 /**
- * Check if *keys* are pressed. Second argument specifies use of logical AND when checking multiple keys.
- * @example
- * jaws.pressed("left a");          // returns true if left arrow key OR a is pressed
- * jaws.pressed("ctrl c", true);    // returns true if ctrl AND a is pressed
+ * Array: If a key is currently pressed, the value associated to the key is true, otherwise false or not present.
  */
-jaws.pressed = function(keys, logical_and) {
-  if(jaws.isString(keys)) { keys = keys.split(" ") }
-  if(logical_and) { return  keys.every( function(key) { return pressed_keys[key] } ) }
-  else            { return  keys.some( function(key) { return pressed_keys[key] } ) }
-}
+jaws.pressed = pressed_keys;
 
 /**
- * Check if *keys* are pressed, but only return true Once for any given keys. Once keys have been released, pressedWithoutRepeat can return true again when keys are pressed.
- * Second argument specifies use of logical AND when checking multiple keys.
- * @example
- * if(jaws.pressedWithoutRepeat("space")) { player.jump() }  // with this in the gameloop player will only jump once even if space is held down
+ * Mapping key names to codes, and vice-versa
  */
-jaws.pressedWithoutRepeat = function(keys, logical_and) {
-  if( jaws.pressed(keys, logical_and) ) {
-    if(!previously_pressed_keys[keys]) { 
-      previously_pressed_keys[keys] = true
-      return true 
-    }
-  }
-  else {
-    previously_pressed_keys[keys] = false
-    return false
-  }
-}
+jaws.keyCodes = keyCodes;
+jaws.keycodeNames = keycodeNames;
 
 /** 
  * sets up a callback for a key (or array of keys) to call when it's pressed down
  * 
  * @example
  * // call goLeft() when left arrow key is  pressed
- * jaws.on_keypress("left", goLeft) 
+ * jaws.on_keypress(jaws.keyCode("left"), goLeft) 
  *
  * // call fireWeapon() when SPACE or CTRL is pressed
- * jaws.on_keypress(["space","ctrl"], fireWeapon)
+ * jaws.on_keypress([jaws.keyCodes["space"],jaws.keyCodes["ctrl"]], fireWeapon)
  */
 jaws.on_keydown = function(key, callback) {
-  if(jaws.isArray(key)) {
-    for(var i=0; key[i]; i++) {
-      on_keydown_callbacks[key[i]] = callback
+  if (jaws.isArray(key)) {
+    for (var i=0; key[i]; i++) {
+       on_keydown_callbacks[key[i]] = callback;
     }
-  }
-  else {
-    on_keydown_callbacks[key] = callback
+  } else {
+    on_keydown_callbacks[key] = callback;
   }
 }
 
@@ -268,13 +182,12 @@ jaws.on_keydown = function(key, callback) {
  * sets up a callback when a key (or array of keys) to call when it's released 
  */
 jaws.on_keyup = function(key, callback) {
-  if(jaws.isArray(key)) {
-    for(var i=0; key[i]; i++) {
-      on_keyup_callbacks[key[i]] = callback
+  if (jaws.isArray(key)) {
+    for (var i=0; key[i]; i++) {
+      on_keyup_callbacks[key[i]] = callback;
     }
-  }
-  else {
-    on_keyup_callbacks[key] = callback
+  } else {
+    on_keyup_callbacks[key] = callback;
   }
 }
 
@@ -282,8 +195,8 @@ jaws.on_keyup = function(key, callback) {
  * Clean up all callbacks set by on_keydown / on_keyup 
  */
 jaws.clearKeyCallbacks = function() {
-  on_keyup_callbacks = []
-  on_keydown_callbacks = []
+  on_keyup_callbacks = [];
+  on_keydown_callbacks = [];
 }
 
 return jaws;
