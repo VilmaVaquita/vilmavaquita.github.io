@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.54"
+version = "0.1.56"
 
 { htmlcup } = require 'htmlcup'
 
@@ -285,7 +285,7 @@ genPage = ->
             @vaquitas.push v
           draw: ->
             jaws.clear()
-            @addVaquita() if @vaquitas.length < 7 or jaws.pressed[spaceKey]
+            @addVaquita() if (!(@gameloop.ticks & 0x7f) and @vaquitas.length < 7) or jaws.pressed[spaceKey]
             v.draw() for v in @vaquitas
             if (@gameloop.ticks & 0xff) is 0xff
               fps.innerHTML = " - #{@gameloop.fps} fps"
