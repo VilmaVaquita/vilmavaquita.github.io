@@ -65,7 +65,7 @@ var jaws = (function(jaws) {
    * If a global property is already taken, a warning will be written to jaws log.
    */
   jaws.unpack = function() {
-    var make_global = ["Sprite", "SpriteList", "Animation", "Viewport", "SpriteSheet", "Parallax", "pressed", "QuadTree"];
+    var make_global = ["Sprite", "SpriteList", "Animation", "SpriteSheet", "Parallax", "pressed", "QuadTree"];
 
     make_global.forEach(function(item) {
       if (window[item]) {
