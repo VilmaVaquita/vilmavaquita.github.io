@@ -111,7 +111,9 @@ function resetPressedKeys(e) {
  */
 function handleKeyUp(e) {
   event = (e) ? e : window.event
-  var human_names = keycode_to_string[event.keyCode].split(" ")
+  var human_names = keycode_to_string[event.keyCode];
+  if (human_names == null) return;
+  human_names = human_names.split(" ");
   human_names.forEach( function(human_name) {
    pressed_keys[human_name] = false
     if(on_keyup_callbacks[human_name]) { 
@@ -127,7 +129,9 @@ function handleKeyUp(e) {
  */
 function handleKeyDown(e) {
   event = (e) ? e : window.event  
-  var human_names = keycode_to_string[event.keyCode].split(" ")
+  var human_names = keycode_to_string[event.keyCode];
+  if (human_names == null) return;
+  human_names = human_names.split(" ");
   human_names.forEach( function(human_name) {
     pressed_keys[human_name] = true
     if(on_keydown_callbacks[human_name]) { 
