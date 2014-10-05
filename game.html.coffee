@@ -4,13 +4,13 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.56"
+version = "0.1.57"
 
 { htmlcup } = require 'htmlcup'
 
 htmlcup[x] = htmlcup.compileTag x for x in [ "svg", "rect", "g", "ellipse", "polygon", "line", "image", "defs", "linearGradient", "stop", "use" ]
 
-title = "Vilma the Vaquita"
+title = "Vilma the Vaquita Demo"
 
 fs = require 'fs'
 
