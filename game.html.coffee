@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.57"
+version = "0.1.62"
 
 { htmlcup } = require 'htmlcup'
 
@@ -24,7 +24,8 @@ pixyvaquita_v105 = datauripng "pixyvaquita_v105_v.png"
 frames =
   _: pixyvaquita
   _v105: pixyvaquita_v105
-  twistleft: datauripng "pixyvaquita_v2_twistleft.png"
+  twist_l: datauripng "pixyvaquita_v2_twist_l.png"
+  twist_r: datauripng "pixyvaquita_v2_twist_r.png"
 
 gameName = "#{title} v#{version}"
 
@@ -162,7 +163,8 @@ genPage = ->
       @div style:"visibility:hidden;position:absolute", ->
         @img id:"pixyvaquita", src:pixyvaquita
         @img id:"pixyvaquita_105", src:frames._v105
-        @img id:"pixyvaquita_twistleft", src:frames.twistleft
+        @img id:"pixyvaquita_twist_l", src:frames.twist_l
+        @img id:"pixyvaquita_twist_r", src:frames.twist_r
       @div style:"position:relative", ->
         @svg id:"sea-svgroot", width:"960", height:"720", style:"position:absolute;opacity:0.9;z-index:-1000", ->
           @defs ->
@@ -244,21 +246,22 @@ genPage = ->
                   @py += @vy = vy
                   super()
           HeroVaquita = class extends Vaquita
-            twistleft = pixyvaquita_twistleft
+            twist = [ pixyvaquita_twist_l, pixyvaquita_twist_r ]
             constructor: ->
               @image = pixyvaquita
               @time = 0
               super()
+            beat_lr: 0
             draw: ->
               @vx = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0)
               @vy = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0)
               @px += @vx
               @py += @vy
               if (@time++ % 3) is 0
-                if @image is twistleft
+                if @image isnt pixyvaquita
                   @image = pixyvaquita
                 else if @vx isnt 0
-                  @image = twistleft
+                  @image = twist[@beat_lr++ & 1]
               super()
           addVaquita: ->
               # n = v.cloneNode()
