@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.62"
+version = "0.1.63"
 
 { htmlcup } = require 'htmlcup'
 
@@ -19,13 +19,13 @@ datauripng = (x)-> datauri "image/png", x
 datauriicon = (x)-> datauri "image/x-icon", x
 
 icon = datauriicon "vaquita.ico"
-pixyvaquita = datauripng "pixyvaquita_v2.png"
+pixyvaquita = datauripng "vilma.png"
 pixyvaquita_v105 = datauripng "pixyvaquita_v105_v.png"
 frames =
   _: pixyvaquita
   _v105: pixyvaquita_v105
-  twist_l: datauripng "pixyvaquita_v2_twist_l.png"
-  twist_r: datauripng "pixyvaquita_v2_twist_r.png"
+  twist_l: datauripng "vilma_twist_l.png"
+  twist_r: datauripng "vilma_twist_r.png"
 
 gameName = "#{title} v#{version}"
 
