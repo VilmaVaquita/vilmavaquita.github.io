@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.154"
+version = "0.1.155"
 
 { htmlcup } = require 'htmlcup'
 
@@ -39,7 +39,7 @@ genPage = ->
  htmlcup.html5Page ->
   @head ->
     @meta charset:"utf-8"
-    @meta name:"viewport", content:"width:480px;height:720px"
+    @meta name:"viewport", content:"width=480, height=720"
     @link rel:"shortcut icon", href:icon
     @title title
   @body style:"margin:0;border:0;padding:0;height:100%;width:100%;background:black", ->
