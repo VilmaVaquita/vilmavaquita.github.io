@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.156"
+version = "0.1.159"
 
 { htmlcup } = require 'htmlcup'
 
@@ -40,6 +40,9 @@ genPage = ->
   @head ->
     @meta charset:"utf-8"
     @meta name:"viewport", content:"width=480, height=720"
+    @meta name:"apple-mobile-web-app-capable", content:"yes"
+    @meta name:"mobile-web-app-capable", content:"yes"
+    # Improve support: http://www.html5rocks.com/en/mobile/fullscreen/
     @link rel:"shortcut icon", href:icon
     @title title
   @body style:"margin:0;border:0;padding:0;height:100%;width:100%;background:black", ->
