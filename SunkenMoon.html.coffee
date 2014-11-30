@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.105"
+version = "0.1.112"
 
 { htmlcup } = require 'htmlcup'
 
@@ -27,6 +27,7 @@ frames =
   twist_r: datauripng "vilma_twist_r.png"
   happybubble0: datauripng "Happy-oxygen-bubble.png"
   grumpybubble0: datauripng "Grumpy-bubble.png"
+  evilbubble0: datauripng "Evil-bubble.png"
 
 gameName = "#{title} v#{version}"
 
@@ -167,6 +168,7 @@ genPage = ->
         @img id:"pixyvaquita_twist_r", src:frames.twist_r
         @img id:"happybubble0", src:frames.happybubble0
         @img id:"grumpybubble0", src:frames.grumpybubble0
+        @img id:"evilbubble0", src:frames.evilbubble0
       @div style:"position:relative", ->
         @svg id:"sea-svgroot", width:"960", height:"720", style:"position:absolute;opacity:0.9;z-index:-1000", ->
           @defs ->
@@ -250,7 +252,7 @@ genPage = ->
               @image = evilbubble0
               super()
             draw: ->
-              @py -= 2
+              @py -= 4
               super()
           twist = [ pixyvaquita_twist_l, pixyvaquita_twist_r ]
           Vaquita = class extends Sprite
@@ -343,10 +345,13 @@ genPage = ->
               # n.setAttribute "transform", ""
               # sea.appendChild n
               angle = Math.random() * 6.28
-              v = if (angle * 100)&1
+              entropy = (angle * 10000)%100
+              v = if x < 50
                 new HappyBubble
-              else
+              else if x < 90
                 new GrumpyBubble
+              else
+                new EvilBubble
               v.vx = 0
               v.vy = 0
               v.px = Math.floor(Math.sin(angle) * 300)

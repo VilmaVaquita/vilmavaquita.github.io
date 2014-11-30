@@ -1,10 +1,10 @@
-TARGETS=index.html
+TARGETS=index.html game.html
 
-
-all: $(TARGETS)
 
 clean:
 	rm -f $(TARGETS)
+
+all: $(TARGETS)
 
 
 %.html: %.html.coffee
