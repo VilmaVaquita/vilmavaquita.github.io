@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.143"
+version = "0.1.154"
 
 { htmlcup } = require 'htmlcup'
 
@@ -39,6 +39,7 @@ genPage = ->
  htmlcup.html5Page ->
   @head ->
     @meta charset:"utf-8"
+    @meta name:"viewport", content:"width:480px;height:720px"
     @link rel:"shortcut icon", href:icon
     @title title
   @body style:"margin:0;border:0;padding:0;height:100%;width:100%;background:black", ->
@@ -62,11 +63,11 @@ genPage = ->
               @stop offset:"100%", style:"stop-color:rgb(0,0,0);stop-opacity:1"
           @rect x:"0", y:"0", width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", fill:"url(#grad1)"
         @canvas width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}",  ->
-        @header style:"position:absolute;top:0;left:0;font-size:10px;width:100%;color:black", ->
+        @header style:"position:absolute;top:0;left:0;font-size:14px;width:100%;color:black", ->
           @span gameName
           @span " - "
           @a target:"_blank", href:"index.html", "Learn about Vaquitas"
-          @span id:"fps"
+          @div style:"text-align:right", id:"fps"
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
     @script type:"text/javascript", "__hasProp = {}.hasOwnProperty; __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };"
@@ -257,12 +258,12 @@ genPage = ->
             @vaquitas.push v
           draw: ->
             jaws.clear()
-            @addVaquita() if (!(@gameloop.ticks & 0x7f) and @vaquitas.length < 7) or jaws.pressed[spaceKey]
+            @addVaquita() if (!(@gameloop.ticks & 0x7f) and @vaquitas.length < 2) or jaws.pressed[spaceKey]
             @addBubble() if 0 is (@gameloop.ticks & 0x7)
             v.draw() for v in @vaquitas
             v?.draw() for v in @bubbles
             if (@gameloop.ticks & 0xff) is 0xff
-              fps.innerHTML = " - #{@gameloop.fps} fps"
+              fps.innerHTML = "#{@gameloop.fps} fps"
         if true
           jaws.init()
           jaws.setupInput();
