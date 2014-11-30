@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.112"
+version = "0.1.116"
 
 { htmlcup } = require 'htmlcup'
 
@@ -32,6 +32,8 @@ frames =
 gameName = "#{title} v#{version}"
 
 htmlcup.jsFile = (f)-> @script type:"text/javascript", (fs.readFileSync(f).toString())
+
+gameAreaSize = [ 240, 360 ]
 
 genPage = ->
  htmlcup.html5Page ->
@@ -170,7 +172,7 @@ genPage = ->
         @img id:"grumpybubble0", src:frames.grumpybubble0
         @img id:"evilbubble0", src:frames.evilbubble0
       @div style:"position:relative", ->
-        @svg id:"sea-svgroot", width:"960", height:"720", style:"position:absolute;opacity:0.9;z-index:-1000", ->
+        @svg id:"sea-svgroot", width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", style:"position:absolute;opacity:0.9;z-index:-1000", ->
           @defs ->
             @linearGradient id:"grad1", x1:"0%", y1:"0%", x2:"0%", y2:"100%", ->
               @stop offset:"0%", style:"stop-color:rgb(255,255,255);stop-opacity:1"
@@ -178,8 +180,8 @@ genPage = ->
               @stop offset:"50%", style:"stop-color:rgb(0,80,240);stop-opacity:1"
               @stop offset:"75%", style:"stop-color:rgb(0,0,180);stop-opacity:1"
               @stop offset:"100%", style:"stop-color:rgb(0,0,0);stop-opacity:1"
-          @rect x:"0", y:"0", width:"960", height:"720", fill:"url(#grad1)"
-        @canvas width:"960", height:"720",  ->
+          @rect x:"0", y:"0", width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", fill:"url(#grad1)"
+        @canvas width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}",  ->
       @footer class:"dim", ->
         @span gameName
         @span " - "
@@ -202,7 +204,7 @@ genPage = ->
       #     catch error2
       #       alert error
 
-      screen_x1 = 240
+      screen_x1 = 120
       screen_y1 = 180
       
       jaws.onload = ->
@@ -243,7 +245,7 @@ genPage = ->
               @image = grumpybubble0
               super()
             draw: ->
-              @py -= 2
+              @py -= 3
               super()
           EvilBubble = class extends Bubble
             constructor: ->
@@ -252,7 +254,7 @@ genPage = ->
               @image = evilbubble0
               super()
             draw: ->
-              @py -= 4
+              @py -= 8
               super()
           twist = [ pixyvaquita_twist_l, pixyvaquita_twist_r ]
           Vaquita = class extends Sprite
@@ -354,7 +356,7 @@ genPage = ->
                 new EvilBubble
               v.vx = 0
               v.vy = 0
-              v.px = Math.floor(Math.sin(angle) * 300)
+              v.px = Math.floor(Math.sin(angle) * 120)
               v.py = 200 # Math.floor(Math.cos(angle) * 300)
               # vaquita.update()
               v.bubbles = b = @bubbles
