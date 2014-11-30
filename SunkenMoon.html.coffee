@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.155"
+version = "0.1.156"
 
 { htmlcup } = require 'htmlcup'
 
@@ -66,7 +66,7 @@ genPage = ->
         @header style:"position:absolute;top:0;left:0;font-size:14px;width:100%;color:black", ->
           @span gameName
           @span " - "
-          @a target:"_blank", href:"index.html", "Learn about Vaquitas"
+          @a target:"_blank", href:"index.html", "Save Vaquitas"
           @div style:"text-align:right", id:"fps"
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
