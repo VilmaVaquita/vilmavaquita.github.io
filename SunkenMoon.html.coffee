@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.295"
+version = "0.1.304"
 
 { htmlcup } = require 'htmlcup'
 
@@ -96,8 +96,8 @@ genPage = ->
       
       jaws.onload = ->
         class Demo
-          { left: leftKey, right: rightKey, up: upKey, down: downKey, space: spaceKey } = jaws.keyCodes
-          Sprite = class extends jaws.Sprite
+          keyCodes: { left: leftKey, right: rightKey, up: upKey, down: downKey, space: spaceKey } = jaws.keyCodes
+          Sprite: Sprite = class extends jaws.Sprite
             # caller needs to set lr for flip center
             constructor: ->
               super
@@ -110,8 +110,8 @@ genPage = ->
               @x = (screen_x1 + @px + @lr) * 2
               @y = (screen_y1 + @py - @tb) * 2
               super()
-          Bubble = Sprite
-          HappyBubble = class extends Bubble
+          Bubble: Bubble = Sprite
+          HappyBubble: HappyBubble = class extends Bubble
             image: happybubble0
             constructor: ->
               @lr = 3
@@ -120,7 +120,7 @@ genPage = ->
             draw: ->
               @py--
               super()
-          GrumpyBubble = class extends Bubble
+          GrumpyBubble: GrumpyBubble = class extends Bubble
             image: grumpybubble0
             constructor: ->
               @lr = 6
@@ -129,7 +129,7 @@ genPage = ->
             draw: ->
               @py -= 3
               super()
-          EvilBubble = class extends Bubble
+          EvilBubble: EvilBubble = class extends Bubble
             image: evilbubble0
             constructor: ->
               @lr = 12
@@ -138,14 +138,14 @@ genPage = ->
             draw: ->
               @py -= 8
               super()
-          Stilla = class extends Bubble
+          Stilla: Stilla = class extends Bubble
             image: stilla0
             Bubble: @Bubble
             constructor: ->
               @lr = 12
               @tb = 12
               super()
-          Vaquita = class extends Sprite
+          Vaquita: Vaquita = class extends Sprite
             twist: [ pixyvaquita_twist_l, pixyvaquita_twist_r ]
             constructor: ->
               @lr = 18
@@ -157,7 +157,7 @@ genPage = ->
                   else if @vx > 0
                     @lr = 18
                   super()
-          AiVaquita = class extends Vaquita
+          AiVaquita: AiVaquita = class extends Vaquita
             constructor: ->
               @image = pixyvaquita
               @time = 0
@@ -181,7 +181,7 @@ genPage = ->
                     else if @vx isnt 0
                       @image = @twist[@beat_lr++ & 1]
                   super()
-          Vilma = class extends Vaquita
+          Vilma: Vilma = class extends Vaquita
             constructor: ->
               @image = pixyvaquita
               @time = 0
@@ -233,42 +233,29 @@ genPage = ->
               v.draw()
               # vaquita.update()
               @vaquitas.push v
-          insertEncounter: (v, x, y)->
+          addStilla: (x, y)@>
+            return if @stilla?
+            v = new @Stilla
+            v.px = x
+            v.py = y
+            @stilla = v
+          addInto: (n, v, x, y)@>
               v.vx = 0
               v.vy = 0
               v.px = x
               v.py = y
-              v.bubbles = b = @bubbles
+              b = @[n]
               if (i = b.indexOf(null)) >= 0
                 b[i] = v
               else
                 b.push v
               v.draw()
-          constructor: (@vaquitas = [], @bubbles = [])->
-          encounter =
-            add: (game, x, y)@> game.insertEncounter(new @creature(), x, y)
-            vy: 0
+          constructor: (@vaquitas = [], @cameos = [], @stilla = null)->
           encounters:
-            happybubble:
-                __proto__: encounter
-                p: 1/1000
-                creature: HappyBubble
-                vy: -1
-            grumpybubble:
-                __proto__: encounter
-                p: 1/9000
-                creature: GrumpyBubble
-                vy: -3
-            evilbubble:
-                __proto__: encounter
-                p: 1/18000
-                creature: EvilBubble
-                vy: -8
-            stilla:
-                __proto__: encounter
-                p: 1/40000
-                creature: Stilla
             __proto__:
+              encounter: encounter =
+                add: (game, x, y)@> game.addInto('cameos', new @creature(), x, y)
+                vy: 0
               random: Math.random
               log: Math.log
               exp: Math.exp
@@ -326,6 +313,25 @@ genPage = ->
                     genRect(v, left, top + height - vy, width, vy)
                   else if vy < 0
                     genRect(v, left, top, width, -vy)
+            happybubble:
+                __proto__: encounter
+                p: 1/1000
+                creature: HappyBubble
+                vy: -1
+            grumpybubble:
+                __proto__: encounter
+                p: 1/9000
+                creature: GrumpyBubble
+                vy: -3
+            evilbubble:
+                __proto__: encounter
+                p: 1/18000
+                creature: EvilBubble
+                vy: -8
+            stilla:
+                __proto__: encounter
+                p: 1/40000
+                add: (game, x, y)@> game.addStilla(x, y)
           setup: ->
             v = new Vilma # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
             v.px = 0
@@ -336,8 +342,9 @@ genPage = ->
             @encounters.generate(@,-screen_x1, -screen_y1, screen_x1 * 2, screen_y1 * 2, screen_x1 * 2, 0)
           radx: screen_x1
           rady: screen_y1
+          rad: screen_x1 * screen_x1 + screen_y1 * screen_y1
           draw: @>
-            { jaws, spaceKey, radx, rady, vilma, vaquitas, bubbles } = @
+            { jaws, spaceKey, radx, rady, vilma, vaquitas, cameos, stilla, rad } = @
             jaws.clear()
             @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 1) or jaws.pressed[spaceKey]
             vilma.move()
@@ -351,15 +358,23 @@ genPage = ->
               v.py -= py
               v.draw()
             vilma.draw()
-            for k,v of bubbles
+            for k,v of cameos
               continue unless v?
               x = v.px -= px
               y = v.py -= py
               if (x < -radx) or (x >= radx) or (y < -rady) or (y >= rady)
-                bubbles[k] = null
+                cameos[k] = null
               else
                 v.draw()
+            if stilla?
+              x = stilla.px -= px
+              y = stilla.py -= py
+              if x * x + y * y > rad * 16
+                @stilla = null
+              else
+                stilla.draw()
             @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, px, py)
+              
             if (@gameloop.ticks & 0xff) is 0xff
               fps.innerHTML = "#{@gameloop.fps} fps"
           jaws: jaws
