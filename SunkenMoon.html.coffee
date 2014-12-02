@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.266"
+version = "0.1.295"
 
 { htmlcup } = require 'htmlcup'
 
@@ -110,12 +110,7 @@ genPage = ->
               @x = (screen_x1 + @px + @lr) * 2
               @y = (screen_y1 + @py - @tb) * 2
               super()
-          Bubble = class extends Sprite
-            draw: ->
-              if @py < -212
-                @bubbles[@idxs] = null
-                return
-              super()
+          Bubble = Sprite
           HappyBubble = class extends Bubble
             image: happybubble0
             constructor: ->
@@ -176,8 +171,8 @@ genPage = ->
                   rx = 0.5 * x / screen_x1
                   ry = 0.5 * y / screen_y1
                   if (s = vx * vx + vy * vy * 2) > 6
-                    vx = Math.round(vx * 0.9 - rx)
-                    vy = Math.round(vy * 0.9 - ry)
+                    vx = Math.round(vx * 0.8 - rx)
+                    vy = Math.round(vy * 0.8 - ry)
                   @px += @vx = vx
                   @py += @vy = vy
                   if (@time++ % 3) is 0
@@ -194,7 +189,7 @@ genPage = ->
               @fpx = @px ? 0
               @fpy = @py ? 0
             beat_lr: 0
-            draw: ->
+            move: ->
               ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0)
               ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0)
               ax *= 0.618
@@ -215,6 +210,8 @@ genPage = ->
               @vy = vy
               @px = (@fpx += @vx)
               @py = (@fpy += @vy)
+            draw: ->
+              { vx, vy } = @
               if (@time++ % 3) is 0
                 if @image isnt pixyvaquita
                   @image = pixyvaquita
@@ -236,35 +233,6 @@ genPage = ->
               v.draw()
               # vaquita.update()
               @vaquitas.push v
-          addBubble: ->
-              # n = v.cloneNode()
-              # n.setAttribute "opacity", "0.5"
-              # n.href.baseVal = "#_v105" if Math.random(0) > 0.5
-              # n.setAttribute "transform", ""
-              # sea.appendChild n
-              angle = Math.random() * 6.28
-              entropy = (angle * 10000)%100
-              v = if x < 50
-                new HappyBubble
-              else if x < 90
-                new GrumpyBubble
-              else if x < 99
-                new EvilBubble
-              else
-                new Stilla
-              v.vx = 0
-              v.vy = 0
-              v.px = Math.floor(Math.sin(angle) * 120)
-              v.py = 200 # Math.floor(Math.cos(angle) * 300)
-              # vaquita.update()
-              v.bubbles = b = @bubbles
-              if (i = b.indexOf(null)) >= 0
-                b[i] = v
-                v.idxs = i
-              else
-                v.idxs = b.length
-                b.push v
-              v.draw()
           insertEncounter: (v, x, y)->
               v.vx = 0
               v.vy = 0
@@ -273,9 +241,7 @@ genPage = ->
               v.bubbles = b = @bubbles
               if (i = b.indexOf(null)) >= 0
                 b[i] = v
-                v.idxs = i
               else
-                v.idxs = b.length
                 b.push v
               v.draw()
           constructor: (@vaquitas = [], @bubbles = [])->
@@ -368,15 +334,32 @@ genPage = ->
             v.vy = 0
             @vilma = v
             @encounters.generate(@,-screen_x1, -screen_y1, screen_x1 * 2, screen_y1 * 2, screen_x1 * 2, 0)
-          draw: ->
-            { jaws, spaceKey } = @
+          radx: screen_x1
+          rady: screen_y1
+          draw: @>
+            { jaws, spaceKey, radx, rady, vilma, vaquitas, bubbles } = @
             jaws.clear()
-            @addVaquita() if (!(@gameloop.ticks & 0x7f) and @vaquitas.length < 1) or jaws.pressed[spaceKey]
-            # @addBubble() if 0 is (@gameloop.ticks & 0x7)
-            @encounters.generate(@,-screen_x1, -screen_y1, screen_x1 * 2, screen_y1 * 2, 0, 0)
-            @vilma.draw()
-            v.draw() for v in @vaquitas
-            v?.draw() for v in @bubbles
+            @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 1) or jaws.pressed[spaceKey]
+            vilma.move()
+            { px, py } = vilma
+            vilma.fpx = 0
+            vilma.fpy = 0
+            vilma.px = 0
+            vilma.py = 0
+            for v in vaquitas
+              v.px -= px
+              v.py -= py
+              v.draw()
+            vilma.draw()
+            for k,v of bubbles
+              continue unless v?
+              x = v.px -= px
+              y = v.py -= py
+              if (x < -radx) or (x >= radx) or (y < -rady) or (y >= rady)
+                bubbles[k] = null
+              else
+                v.draw()
+            @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, px, py)
             if (@gameloop.ticks & 0xff) is 0xff
               fps.innerHTML = "#{@gameloop.fps} fps"
           jaws: jaws
