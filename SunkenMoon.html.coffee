@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.159"
+version = "0.1.266"
 
 { htmlcup } = require 'htmlcup'
 
@@ -28,6 +28,7 @@ frames =
   happybubble0: datauripng "Happy-oxygen-bubble.png"
   grumpybubble0: datauripng "Grumpy-bubble.png"
   evilbubble0: datauripng "Evil-bubble.png"
+  stilla0: datauripng "Stilla-the-starfish.png"
 
 gameName = "#{title} v#{version}"
 
@@ -43,6 +44,7 @@ genPage = ->
     @meta name:"apple-mobile-web-app-capable", content:"yes"
     @meta name:"mobile-web-app-capable", content:"yes"
     # Improve support: http://www.html5rocks.com/en/mobile/fullscreen/
+    # Homescreen installed webapp on Android Chrome has weird name! (Web App)
     @link rel:"shortcut icon", href:icon
     @title title
   @body style:"margin:0;border:0;padding:0;height:100%;width:100%;background:black", ->
@@ -53,6 +55,7 @@ genPage = ->
         @img id:"happybubble0", src:frames.happybubble0
         @img id:"grumpybubble0", src:frames.grumpybubble0
         @img id:"evilbubble0", src:frames.evilbubble0
+        @img id:"stilla0", src:frames.stilla0
     @div style:"display:table;width:100%;max-width:100%;height:100%;margin:0;border:0;padding:0", ->
      @div style:"display:table-cell;vertical-align:middle;width:100%;margin:0;border:0;padding:0;text-align:center", ->
       @div style:"position:relative;display:inline-block",  width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", ->
@@ -114,34 +117,41 @@ genPage = ->
                 return
               super()
           HappyBubble = class extends Bubble
+            image: happybubble0
             constructor: ->
               @lr = 3
               @tb = 3
-              @image = happybubble0
               super()
             draw: ->
               @py--
               super()
           GrumpyBubble = class extends Bubble
+            image: grumpybubble0
             constructor: ->
               @lr = 6
               @tb = 6
-              @image = grumpybubble0
               super()
             draw: ->
               @py -= 3
               super()
           EvilBubble = class extends Bubble
+            image: evilbubble0
             constructor: ->
               @lr = 12
               @tb = 12
-              @image = evilbubble0
               super()
             draw: ->
               @py -= 8
               super()
-          twist = [ pixyvaquita_twist_l, pixyvaquita_twist_r ]
+          Stilla = class extends Bubble
+            image: stilla0
+            Bubble: @Bubble
+            constructor: ->
+              @lr = 12
+              @tb = 12
+              super()
           Vaquita = class extends Sprite
+            twist: [ pixyvaquita_twist_l, pixyvaquita_twist_r ]
             constructor: ->
               @lr = 18
               @tb = 5
@@ -174,9 +184,9 @@ genPage = ->
                     if @image isnt pixyvaquita
                       @image = pixyvaquita
                     else if @vx isnt 0
-                      @image = twist[@beat_lr++ & 1]
+                      @image = @twist[@beat_lr++ & 1]
                   super()
-          HeroVaquita = class extends Vaquita
+          Vilma = class extends Vaquita
             constructor: ->
               @image = pixyvaquita
               @time = 0
@@ -187,6 +197,8 @@ genPage = ->
             draw: ->
               ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0)
               ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0)
+              ax *= 0.618
+              ay *= 0.618
               vx = @vx
               vy = @vy
               if ax * vx < 0
@@ -207,7 +219,7 @@ genPage = ->
                 if @image isnt pixyvaquita
                   @image = pixyvaquita
                 else if vx * vx + (vy * vy / 4) > 1
-                  @image = twist[@beat_lr++ & 1]
+                  @image = @twist[@beat_lr++ & 1]
               super()
           addVaquita: ->
               # n = v.cloneNode()
@@ -236,8 +248,10 @@ genPage = ->
                 new HappyBubble
               else if x < 90
                 new GrumpyBubble
-              else
+              else if x < 99
                 new EvilBubble
+              else
+                new Stilla
               v.vx = 0
               v.vy = 0
               v.px = Math.floor(Math.sin(angle) * 120)
@@ -251,26 +265,126 @@ genPage = ->
                 v.idxs = b.length
                 b.push v
               v.draw()
+          insertEncounter: (v, x, y)->
+              v.vx = 0
+              v.vy = 0
+              v.px = x
+              v.py = y
+              v.bubbles = b = @bubbles
+              if (i = b.indexOf(null)) >= 0
+                b[i] = v
+                v.idxs = i
+              else
+                v.idxs = b.length
+                b.push v
+              v.draw()
           constructor: (@vaquitas = [], @bubbles = [])->
+          encounter =
+            add: (game, x, y)@> game.insertEncounter(new @creature(), x, y)
+            vy: 0
+          encounters:
+            happybubble:
+                __proto__: encounter
+                p: 1/1000
+                creature: HappyBubble
+                vy: -1
+            grumpybubble:
+                __proto__: encounter
+                p: 1/9000
+                creature: GrumpyBubble
+                vy: -3
+            evilbubble:
+                __proto__: encounter
+                p: 1/18000
+                creature: EvilBubble
+                vy: -8
+            stilla:
+                __proto__: encounter
+                p: 1/40000
+                creature: Stilla
+            __proto__:
+              random: Math.random
+              log: Math.log
+              exp: Math.exp
+              pow: Math.pow
+              poissonSample: (m)@>
+                { exp, random } = @
+                pgen = (m)->
+                    x = 0
+                    p = exp(-m)
+                    s = p
+                    u = random()
+                    while u > s
+                        x++
+                        p = p * m / x
+                        s += p
+                    x
+                s = 0
+                while m > 50
+                  s += pgen 50
+                  m -= 50
+                s + pgen m
+              generate: (game,left,top,width,height,vx,vvy)@>
+                { probability, random } = @
+                genRect = (m,left,top,width,height)=>
+                  c = m.p * width * height
+                  # c = 0
+                  c = @poissonSample(c)
+                  # c = 0 # if c > 1000
+                  # c-- if random() > 0.15
+                  while c-- > 0
+                    m.add?( game, left + ((random() * width)|0), top + ((random() * height)|0) )
+                    1
+                if vx * vx >= width * width
+                  for k,v of @
+                    genRect(v, left, top, width, height)
+                else for k,v of @
+                  vy = vvy - v.vy
+                  if vy * vy >= height * height
+                    genRect(v, left, top, width, height)
+                  else if vx > 0
+                    if vy > 0
+                      genRect(v, left, top + height - vy, width, vy)
+                      genRect(v, left + width - vx, top, vx, height - vy)
+                    else if vy < 0
+                      genRect(v, left, top, width, -vy)
+                      genRect(v, left + width - vx, top - vy, vx, height + vy)
+                  else if vx < 0
+                    if vy > 0
+                      genRect(v, left, top + height - vy, width, vy)
+                      genRect(v, left, top, -vx, height - vy)
+                    else if vy < 0
+                      genRect(v, left, top, width, -vy)
+                      genRect(v, left, top - vy, -vx, height + vy)
+                  else if vy > 0
+                    genRect(v, left, top + height - vy, width, vy)
+                  else if vy < 0
+                    genRect(v, left, top, width, -vy)
           setup: ->
-            v = new HeroVaquita # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
+            v = new Vilma # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
             v.px = 0
             v.py = 0
             v.vx = 0
             v.vy = 0
-            @vaquitas.push v
+            @vilma = v
+            @encounters.generate(@,-screen_x1, -screen_y1, screen_x1 * 2, screen_y1 * 2, screen_x1 * 2, 0)
           draw: ->
+            { jaws, spaceKey } = @
             jaws.clear()
-            @addVaquita() if (!(@gameloop.ticks & 0x7f) and @vaquitas.length < 2) or jaws.pressed[spaceKey]
-            @addBubble() if 0 is (@gameloop.ticks & 0x7)
+            @addVaquita() if (!(@gameloop.ticks & 0x7f) and @vaquitas.length < 1) or jaws.pressed[spaceKey]
+            # @addBubble() if 0 is (@gameloop.ticks & 0x7)
+            @encounters.generate(@,-screen_x1, -screen_y1, screen_x1 * 2, screen_y1 * 2, 0, 0)
+            @vilma.draw()
             v.draw() for v in @vaquitas
             v?.draw() for v in @bubbles
             if (@gameloop.ticks & 0xff) is 0xff
               fps.innerHTML = "#{@gameloop.fps} fps"
+          jaws: jaws
+          spaceKey: spaceKey
         if true
           jaws.init()
           jaws.setupInput();
-          game = new Demo
+          window.game = game = new Demo
           gameloop = new jaws.GameLoop(game, { fps:24 })
           (game.gameloop = gameloop).start()
         else
