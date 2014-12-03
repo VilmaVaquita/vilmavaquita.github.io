@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.304"
+version = "0.1.347"
 
 { htmlcup } = require 'htmlcup'
 
@@ -93,7 +93,23 @@ genPage = ->
 
       screen_x1 = 120
       screen_y1 = 180
-      
+
+      ###
+      # an ad-hoc redux of hammer.js
+      hammerLet = do(window, navigator)@>
+        mobile_regex: mobile_regex = /mobile|tablet|ip(ad|hone|od)|android/i
+        support_touch: support_touch = ('ontouchstart' in window)
+        prefixed: prefixed =
+          global: window
+          get: (sym)@>
+            { global } = @g
+            for v in @vendors
+              return r if (r = global[v + sym])?
+            undefined
+          vendors: [ 'webkit', 'moz', 'MS', 'ms', 'o' ]
+        PointerEvent: PointerEvent ? prefixed.run(window, 'PointerEvent')?
+        suppourt_touch_only: support_touch && mobile_regex.test(navigator.userAgent)
+      ###
       jaws.onload = ->
         class Demo
           keyCodes: { left: leftKey, right: rightKey, up: upKey, down: downKey, space: spaceKey } = jaws.keyCodes
@@ -182,16 +198,23 @@ genPage = ->
                       @image = @twist[@beat_lr++ & 1]
                   super()
           Vilma: Vilma = class extends Vaquita
-            constructor: ->
+            constructor: (@game)->
               @image = pixyvaquita
               @time = 0
               super()
               @fpx = @px ? 0
               @fpy = @py ? 0
+              @touch = @game.touchInput
             beat_lr: 0
             move: ->
-              ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0)
-              ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0)
+              { touch } = @
+              { tx, ty } = touch
+              itx = (tx >= 1 then 1 else tx <= -1 then -1 else 0)
+              ity = (ty >= 1 then 1 else ty <= -1 then -1 else 0)
+              touch.tx = tx * 0.9 - itx
+              touch.ty = ty * 0.9 - ity
+              ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0) - itx
+              ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0) - ity
               ax *= 0.618
               ay *= 0.618
               vx = @vx
@@ -332,14 +355,56 @@ genPage = ->
                 __proto__: encounter
                 p: 1/40000
                 add: (game, x, y)@> game.addStilla(x, y)
+          touchInput:
+            tx: 0
+            ty: 0
+            ongoing: { }
+            __proto__:
+              eval: eval
+              start: (ev,el)@>
+                { ongoing } = @
+                for t in ev.changedTouches
+                  { identifier, pageX, pageY } = t
+                  ongoing[identifier] =
+                    px: pageX
+                    py: pageY
+              move: (ev,el)@>
+                { ongoing } = @
+                for t in ev.changedTouches
+                  { identifier, pageX, pageY } = t
+                  o = ongoing[identifier]
+                  @tx += pageX - o.px
+                  @ty += pageY - o.py
+                  o.px = pageX
+                  o.py = pageY
+              end: (ev,el)@>
+                { ongoing } = @
+                for t in ev.changedTouches
+                  { identifier } = t
+                  delete ongoing[identifier]
+              handle: (name)->
+                touchInput = @
+                (event)->
+                  event.preventDefault()
+                  event.stopPropagation()
+                  touchInput[name](event,this) catch err
+                    alert err.toString()
           setup: ->
-            v = new Vilma # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
+            v = new Vilma(@) # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
             v.px = 0
             v.py = 0
             v.vx = 0
             v.vy = 0
             @vilma = v
             @encounters.generate(@,-screen_x1, -screen_y1, screen_x1 * 2, screen_y1 * 2, screen_x1 * 2, 0)
+            { touchInput } = @
+            touchInput.game = @
+            window.addEventListener "touchmove",   touchInput.handle('move'), true
+            window.addEventListener "touchstart",  touchInput.handle('start'), true
+            tend = touchInput.handle 'end'
+            window.addEventListener "touchend",     tend, true
+            window.addEventListener "touchleave",   tend, true
+            window.addEventListener "touchcancel",  tend, true
           radx: screen_x1
           rady: screen_y1
           rad: screen_x1 * screen_x1 + screen_y1 * screen_y1
