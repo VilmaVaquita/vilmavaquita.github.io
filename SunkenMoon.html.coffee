@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.360"
+version = "0.1.367"
 
 { htmlcup } = require 'htmlcup'
 
@@ -40,7 +40,7 @@ genPage = ->
  htmlcup.html5Page ->
   @head ->
     @meta charset:"utf-8"
-    @meta name:"viewport", content:"width=480, height=720, user-scalable=no"
+    @meta name:"viewport", content:"width=480, user-scalable=no"
     @meta name:"apple-mobile-web-app-capable", content:"yes"
     @meta name:"mobile-web-app-capable", content:"yes"
     # Improve support: http://www.html5rocks.com/en/mobile/fullscreen/
@@ -80,7 +80,6 @@ genPage = ->
     @jsFile "jaws/jaws-min.js"
     # @jsFile "jaws-assets-named.js"
     @coffeeScript -> do ->
-      # svgroot = document.getElementById("sea-svgroot")
 
       # reportErrors = (x)->
       #   try
@@ -423,6 +422,13 @@ genPage = ->
               v.py -= py
               v.draw()
             vilma.draw()
+            if stilla?
+              x = stilla.px -= px
+              y = stilla.py -= py
+              if x * x + y * y > rad * 16
+                @stilla = null
+              else
+                stilla.draw()
             for k,v of cameos
               continue unless v?
               x = v.px -= px
@@ -431,13 +437,6 @@ genPage = ->
                 cameos[k] = null
               else
                 v.draw()
-            if stilla?
-              x = stilla.px -= px
-              y = stilla.py -= py
-              if x * x + y * y > rad * 16
-                @stilla = null
-              else
-                stilla.draw()
             @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, px, py)
               
             if (@gameloop.ticks & 0xff) is 0xff
