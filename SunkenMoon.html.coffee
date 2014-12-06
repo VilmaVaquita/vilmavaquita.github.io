@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.769"
+version = "0.1.800"
 
 { htmlcup } = require 'htmlcup'
 
@@ -118,6 +118,31 @@ genPage = ->
               @x = (screen_x1 + @px + @lr) * 2
               @y = (screen_y1 + @py - @tb) * 2
               super()
+            cr: 4
+            sqrt: Math.sqrt
+            collide: (o)@>
+              { px, py, cr } = o
+              opx = o.px; opy = o.py; ocr = o.cr
+              dx = px - opx
+              dy = py - opy
+              dc = cr + ocr
+              if (d = dx * dx + dy * dy) <= dc * dc
+                { sqrt } = @
+                if false
+                  py = opy
+                  px = opx - dc
+                else
+                  d = sqrt d
+                  if d < 0.1
+                    dy = -1
+                    d = dx * dx + dy * dy
+                    d = sqrt d
+                  d = dc / sqrt(d)
+                  py = opy + dy * d
+                  px = opx + dx * d
+                @px = px | 0
+                @py = py | 0
+                
           Bubble: Bubble = Sprite
           HappyBubble: HappyBubble = class extends Bubble
             image: happybubble0
@@ -627,16 +652,20 @@ genPage = ->
               
           setup: ->
             { bluescape, radx, rady } = @
+
             bluescape.w = radx
             bluescape.h = rady
             bluescape.init()
+
             v = new Vilma(@) # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
             v.px = 0
             v.py = 0
             v.vx = 0
             v.vy = 0
             @vilma = v
+            
             @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, radx * 2, 0)
+            
             { touchInput } = @
             touchInput.game = @
             x = document.body
@@ -646,12 +675,54 @@ genPage = ->
             x.addEventListener "touchend",     tend, true
             x.addEventListener "touchleave",   tend, true
             x.addEventListener "touchcancel",  tend, true
+
+            @collisions.setup(radx, rady)
           radx: screen_x1
           rady: screen_y1
           rad: screen_x1 * screen_x1 + screen_y1 * screen_y1
+          collisions:
+            Array: Array
+            setup: (radx, rady)@>
+              # Setup the collision detection subsystem
+              # Assumes:
+              # - radx and rady are multiples of 8
+              w = @w = (radx >> 2)
+              h = @h = (rady >> 2)
+              @b = new @Array(w * h)
+              @o = (w >> 1) * h + (h >> 1) + 1
+              @l = [ ]
+            a: (o)@>
+              # Add a collision subject
+              # Assumes:
+              # - all the corners of the object's collision area are in the viewing area
+              # - the object's collision radius is <= 8
+              { l, b, w } = @
+              i = @o + (o.py >> 3) * @w + (o.px >> 3)
+              @b[i-1] = @b[i+1] = @b[i] = o
+              i -= w
+              @b[i-1] = @b[i+1] = @b[i] = o
+              i += w << 1
+              @b[i-1] = @b[i+1] = @b[i] = o
+              @l.push o
+              
+              # o.crad
+            q: (o)@>
+              # Quick collision test
+              # Test collisions of object against previously added collision subjects
+              # For this to work correctly:
+              # - the object should have a collision radius <= 4,
+              # - have a center in the viewing area
+              @b[@o + (o.py >> 3) * @w + (o.px >> 3)]?.collide(o)
+            # t2: (o)@>
+            # Like above but for objects with a collision radius <= 8
+            clear: @>
+              @b = new @Array(@b.length) # Discrete board for detecting collisions
+              @l = [ ] # List of collisions targets
           draw: @>
-            { jaws, spaceKey, radx, rady, vilma, vaquitas, cameos, stilla, rad } = @
-            @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 1) or jaws.pressed[spaceKey]
+            { jaws, spaceKey, radx, rady, vilma, vaquitas, cameos, stilla, rad, collisions } = @
+            @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 7) or jaws.pressed[spaceKey]
+            vilma.fpx += vilma.px
+            vilma.fpy += vilma.py
             vilma.move()
             { px, py } = vilma
             vilma.fpx = 0
@@ -661,11 +732,13 @@ genPage = ->
             px = px | 0
             py = py | 0
             @bluescape.frame jaws.context, -px, -py
-            collidables = [ vilma ]
+            collisions.a vilma
             for v in vaquitas
-              v.px -= px
-              v.py -= py
+              x = v.px -= px
+              y = v.py -= py
               v.draw()
+              if (x >= -radx) and (x < radx) and (y >= -rady) and (y < rady)
+                collisions.a v
             vilma.draw()
             if stilla?
               x = stilla.px -= px
@@ -673,7 +746,9 @@ genPage = ->
               if x * x + y * y > rad * 16
                 @stilla = null
               else
-                stilla.draw()
+                stilla.draw(collisions)
+                if (x >= -radx) and (x < radx) and (y >= -rady) and (y < rady)
+                  collisions.a stilla
             for k,v of cameos
               continue unless v?
               x = v.px -= px
@@ -682,7 +757,9 @@ genPage = ->
                 cameos[k] = null
               else
                 v.draw()
+                collisions.q v
             @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, px, py)
+            collisions.clear()
               
             if (@gameloop.ticks & 0xff) is 0xff
               fps.innerHTML = "#{@gameloop.fps} fps"
