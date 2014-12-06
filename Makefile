@@ -10,6 +10,9 @@ all: $(TARGETS)
 %.html: %.html.coffee
 	(sh -c "coffee $< >$@.new" && mv $@.new $@ && touch -r $< $@) || rm -f $@
 
+%.appcache: %.html
+	touch -r $< $@
+
 %.js: %.coffee
 	coffee -bc $<
 
@@ -38,13 +41,18 @@ all: $(TARGETS)
 
 %_8X.png: %.pnmfix.png
 	convert -interpolate integer -scale 800 $< -format BMP2 $@
+
 %_6X.png: %.pnmfix.png
 	convert -interpolate integer -scale 600 $< -format BMP2 $@
+
 %_5X.png: %.pnmfix.png
 	convert -interpolate integer -scale 500 $< -format BMP2 $@
+
 %_4X.png: %.pnmfix.png
 	convert -interpolate integer -scale 400 $< -format BMP2 $@
+
 %_3X.png: %.pnmfix.png
 	convert -interpolate integer -scale 300 $< -format BMP2 $@
+
 %_2X.png: %.pnmfix.png
 	convert -interpolate integer -scale 200 $< -format BMP2 $@

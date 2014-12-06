@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.367"
+version = "0.1.764"
 
 { htmlcup } = require 'htmlcup'
 
@@ -37,7 +37,8 @@ htmlcup.jsFile = (f)-> @script type:"text/javascript", (fs.readFileSync(f).toStr
 gameAreaSize = [ 240, 360 ]
 
 genPage = ->
- htmlcup.html5Page ->
+ htmlcup.printHtml "<!DOCTYPE html>\n"
+ htmlcup.html lang:"en", manifest:"SunkenMoon.appcache", style:"height:100%", ->
   @head ->
     @meta charset:"utf-8"
     @meta name:"viewport", content:"width=480, user-scalable=no"
@@ -59,20 +60,11 @@ genPage = ->
     @div style:"display:table;width:100%;max-width:100%;height:100%;margin:0;border:0;padding:0", ->
      @div style:"display:table-cell;vertical-align:middle;width:100%;margin:0;border:0;padding:0;text-align:center", ->
       @div style:"position:relative;display:inline-block",  width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", ->
-        @svg id:"sea-svgroot", width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", style:"position:absolute;opacity:0.9;z-index:-1000", ->
-          @defs ->
-            @linearGradient id:"grad1", x1:"0%", y1:"0%", x2:"0%", y2:"100%", ->
-              @stop offset:"0%", style:"stop-color:rgb(255,255,255);stop-opacity:1"
-              @stop offset:"25%", style:"stop-color:rgb(100,200,250);stop-opacity:1"
-              @stop offset:"50%", style:"stop-color:rgb(0,80,240);stop-opacity:1"
-              @stop offset:"75%", style:"stop-color:rgb(0,0,180);stop-opacity:1"
-              @stop offset:"100%", style:"stop-color:rgb(0,0,0);stop-opacity:1"
-          @rect x:"0", y:"0", width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", fill:"url(#grad1)"
-        @canvas width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}",  ->
+        @canvas width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}"
         @header style:"position:absolute;top:0;left:0;font-size:14px;width:100%;color:black", ->
           @span gameName
           @span " - "
-          @a target:"_blank", href:"index.html", "Save Vaquitas"
+          @a target:"_blank", href:"index.html", "Save Vaqitas"
           @div style:"text-align:right", id:"fps"
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
@@ -92,6 +84,7 @@ genPage = ->
 
       screen_x1 = 120
       screen_y1 = 180
+      { sqrt } = Math
 
       ###
       # an ad-hoc redux of hammer.js
@@ -193,8 +186,8 @@ genPage = ->
                   if (@time++ % 3) is 0
                     if @image isnt pixyvaquita
                       @image = pixyvaquita
-                    else if @vx isnt 0
-                      @image = @twist[@beat_lr++ & 1]
+                    else if vx * vx + vy * vy > 2
+                      @image = @twist[ @beat_lr++ & 1 ]
                   super()
           Vilma: Vilma = class extends Vaquita
             constructor: (@game)->
@@ -208,12 +201,16 @@ genPage = ->
             move: ->
               { touch } = @
               { tx, ty } = touch
-              itx = (tx >= 1 then 1 else tx <= -1 then -1 else 0)
-              ity = (ty >= 1 then 1 else ty <= -1 then -1 else 0)
+              itx = (tx >= 2 then 2 else tx <= -2 then -2 else 0)
+              ity = (ty >= 2 then 2 else ty <= -2 then -2 else 0)
               touch.tx = tx * 0.9 - itx
               touch.ty = ty * 0.9 - ity
-              ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0) - itx
-              ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0) - ity
+              ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0) - itx / 2
+              ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0) - ity / 2
+              if (aq = ax * ax + ay * ay) > 1
+                aq = sqrt(aq)
+                ax /= aq
+                ay /= aq
               ax *= 0.618
               ay *= 0.618
               vx = @vx
@@ -324,6 +321,8 @@ genPage = ->
                     else if vy < 0
                       genRect(v, left, top, width, -vy)
                       genRect(v, left + width - vx, top - vy, vx, height + vy)
+                    else
+                      genRect(v, left + width, top, vx, height)
                   else if vx < 0
                     if vy > 0
                       genRect(v, left, top + height - vy, width, vy)
@@ -331,6 +330,8 @@ genPage = ->
                     else if vy < 0
                       genRect(v, left, top, width, -vy)
                       genRect(v, left, top - vy, -vx, height + vy)
+                    else
+                      genRect(v, left, top, -vx, height)
                   else if vy > 0
                     genRect(v, left, top + height - vy, width, vy)
                   else if vy < 0
@@ -388,28 +389,268 @@ genPage = ->
                   event.stopPropagation()
                   touchInput[name](event,this) catch err
                     alert err.toString()
+          ColorPlane: ColorPlane = do->
+            document: document
+            init: @>
+              { color } = @
+              if color and typeof color is 'string'
+                e = @document.createElement "canvas"
+                e.width   = @w
+                e.height  = @h
+                ctx = e.getContext '2d'
+                @color = ctx.fillStyle = color
+            frame: (t)@>
+              # t.save()
+              t.fillStyle = @color
+              t.fillRect 0,0,1024,1024
+              # t.restore()
+          GenericPlane: GenericPlane =
+            document: document
+            init: @>
+              { document } = @
+              e = document.createElement "canvas"
+              e.width   = @w
+              e.height  = @h
+              @ctx = e.getContext '2d'
+          ParallaxPlane: ParallaxPlane =
+            __proto__: GenericPlane
+            ParallaxPlaneSuper: GenericPlane
+            lower: null
+            logscale: 2
+            x: 0
+            y: 0
+            fx: 0
+            fy: 0
+            frame: (t,dx,dy)@>
+              { fx, fy, x, y, logscale, w, h, ctx } = @
+              nfx = fx + dx
+              nfy = fy + dy
+              nx = nfx >> logscale
+              ny = nfy >> logscale
+              if nx isnt x
+                if nx >= w
+                  nx -= w
+                  nfx -= w << logscale
+                else if nx < 0
+                  nx += w
+                  nfx += w << logscale
+                @x = nx
+              if ny isnt y
+                if ny >= h
+                  ny -= h
+                  nfy -= h << logscale
+                else if ny < 0
+                  ny += h
+                  nfy += h << logscale
+                @y = ny
+              @fx = nfx
+              @fy = nfy
+              @lower?.frame t, dx >> logscale, dy >> logscale
+              { canvas } = ctx
+              t.drawImage canvas,  nx,      ny
+              t.drawImage canvas,  nx - w,  ny
+              t.drawImage canvas,  nx,      ny - h
+              t.drawImage canvas,  nx - w,  ny - h
+            init: @>
+              @lower?.init()
+              @ParallaxPlaneSuper.init.call @
+          SeamlessPlane: SeamlessPlane =
+            withRect: (rx,ry,rw,rh,cb)@>
+              { w, h } = @
+              if (ex = rx + rw) > w
+                if (ey = ry + rh) > h
+                  cb  rx,  ry,  w - rx,  h - ry, 0,      0
+                  cb  0,   ry,  ex - w,  h - ry, w - rx, 0
+                  cb  rx,  0,   w - rx,  ey - h, 0,      h - ry
+                  cb  0,   0,   ex - w,  ey - h, w - rx, h - ry
+                else
+                  cb rx, ry, w - rx, rh, 0,      0
+                  cb 0,  ry, ex - w, rh, w - rx, 0
+              else
+                if (ey = ry + rh) > h
+                  cb rx, ry, rw, h - ry, 0, 0
+                  cb rx, 0,  rw, ey - h, 0, h - ry
+                else
+                  cb rx, ry, rw, rh, 0, 0
+            __proto__: ParallaxPlane
+          WaterPlane: WaterPlane = do->
+            waterscapeSuper: waterscapeSuper = SeamlessPlane
+            __proto__: waterscapeSuper
+            random: Math.random
+            sqrt: Math.sqrt
+            colors: [ "cyan", "blue" ]
+            randomStuff: @>
+              { random, sqrt, ctx } = @
+              s = sqrt(15000 / (random() * 100 + 1)) | 0
+              @withRect (random() * @w | 0), (random() * @h | 0), s, s >> 2, (x,y,w,h)->
+                ctx.fillRect x,y,w,h
+              @
+            init: @>
+              { lower, w, h, moltf, colors } = @
+              if lower?
+                lower.w ?= w
+                lower.h ?= h
+                lower.moltf ?= moltf >> lower.logscale if moltf?
+              @waterscapeSuper.init.call @
+              { ctx } = @
+              for k,v of colors
+                ctx.fillStyle = v
+                colors[k] = ctx.fillStyle
+              ctx.globalAlpha = 0.06
+              if false
+                x = 300
+                while x-- > 0
+                  @randomStuff()
+            waterscapeSuperFrame: waterscapeSuper.frame
+            frame: (t)@>
+              { ctx, moltf, random } = @
+              
+              ctx.fillStyle = @colors[ random() * 1.2 | 0 ]
+              @randomStuff() while moltf-- > 0
+
+              # t.save()
+              t.globalAlpha = @alpha
+              @waterscapeSuperFrame.apply @, arguments
+              # t.restore()
+            logscale: 0
+          
+          # PinkWaveletPlane: PinkWaveletPlane = do->
+          #   waterscapeSuper: waterscapeSuper = SeamlessPlane
+          #   __proto__: waterscapeSuper
+          #   random: Math.random
+          #   sqrt: Math.sqrt
+          #   sprites: [ "cyan", "blue" ]
+          #   wlets: null
+          #   randmix: @>
+          #     { random, sqrt, ctx } = @
+          #     s = sqrt(15000 / (random() * 100 + 1)) | 0
+          #     @withRect (random() * @w | 0), (random() * @h | 0), s, s >> 2, (x,y,w,h)->
+          #       ctx.fillRect x,y,w,h
+          #     @
+          #   init: @>
+          #     { lower, w, h, moltf, colors } = @
+          #     if lower?
+          #       lower.w ?= w
+          #       lower.h ?= h
+          #       lower.moltf ?= moltf >> lower.logscale if moltf?
+          #     @waterscapeSuper.init.call @
+          #     { ctx } = @
+          #     for k,v of colors
+          #       ctx.fillStyle = v
+          #       colors[k] = ctx.fillStyle
+          #     ctx.globalAlpha = 0.06
+          #     if true
+          #       x = 300
+          #       while x-- > 0
+          #         @randomStuff()
+          #   waterscapeSuperFrame: waterscapeSuper.frame
+          #   frame: (t)@>
+          #     { ctx, moltf, random } = @
+              
+          #     ctx.fillStyle = @colors[ random() * 1.2 | 0 ]
+          #     @randomStuff() while moltf-- > 0
+
+          #     { alpha } = @
+          #     # t.save()
+          #     t.globalAlpha = alpha if alpha?
+          #     @waterscapeSuperFrame.apply @, arguments
+          #     # t.restore()
+          #   logscale: 0
+          waterscape: waterscape = do->
+            __proto__: WaterPlane
+            # color: "cyan"
+            logscale: 0
+            moltf: 12
+            colors: [ "#051555", "#33ddff" ]
+            alpha: 0.3
+            lower:
+              logscale: 2
+              __proto__: WaterPlane
+              # color: "blue"
+              colors: [ "#0000ff", "#0077ff" ]
+              alpha: 0.3
+              lower:
+                  color: "#051555"
+                  __proto__: ColorPlane
+          bluescape:
+            __proto__: SeamlessPlane
+            bluescapeSuper: SeamlessPlane
+            lower: waterscape
+            frame: (t,sx,sy)@>
+              { ctx, random, w, h } = @
+
+              x = @x + sx
+              x = (x + w) % w
+              y = (y + h) % h
+              @x = x
+              y = @y + sy
+              y += h while y < 0
+              y -= h while y >= h
+              @y = y
+              # i = ctx.getImageData(0,0,@w,@h)
+
+              ctx.save()
+              @lower.frame ctx, sx, sy
+              ctx.restore()
+              # t.save()
+              # t.globalCompositeOperation = 'copy'
+
+              t.drawImage ctx.canvas, 0,0,w,h, 0,0,w*4,h*4
+              
+              # t.drawImage ctx.canvas, 0,0,w>>2,h>>2, 0,0,w*2,h*2
+
+              # t.drawImage ctx.canvas, 0,0,w>>2,h>>2, 0,0,w*2,h>>2
+              # t.drawImage t.canvas, 0,0,w*2,h>>2, 0,0,w*2,h*2
+
+              # t.restore()
+              # @withRect x, y, rx*2, ry*2, (x,y,w,h,ox,oy)-> t.drawImage c, x,y,w,h, ox*2,oy*2,w*2,h*2
+              # t.drawImage c, 0, 0, 
+              # t.fillColor = if random() > 0.5 then "#104080" else "#155590"
+              # t.fillRect 0, 0, 100, 100
+              # t.clearRect 0, 0, 100, 100
+              # t.drawImage t, 0, 0, 100, 100, 50, 50, 100, 100
+            init: @>
+              { w, h, lower } = @
+
+              @w = w
+              @h = h
+
+              lower.w = (w >> 2) * 5
+              lower.h = (h >> 2) * 5
+
+              @bluescapeSuper.init.call @
+
+              { ctx } = @
+
+              # ctx.fillStyle = "#0099dd"
+              # ctx.fillRect 0, 0, @w, @h
+              
           setup: ->
+            { bluescape, radx, rady } = @
+            bluescape.w = radx
+            bluescape.h = rady
+            bluescape.init()
             v = new Vilma(@) # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
             v.px = 0
             v.py = 0
             v.vx = 0
             v.vy = 0
             @vilma = v
-            @encounters.generate(@,-screen_x1, -screen_y1, screen_x1 * 2, screen_y1 * 2, screen_x1 * 2, 0)
+            @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, radx * 2, 0)
             { touchInput } = @
             touchInput.game = @
-            window.addEventListener "touchmove",   touchInput.handle('move'), true
-            window.addEventListener "touchstart",  touchInput.handle('start'), true
+            x = document.body
+            x.addEventListener "touchmove",   touchInput.handle('move'), true
+            x.addEventListener "touchstart",  touchInput.handle('start'), true
             tend = touchInput.handle 'end'
-            window.addEventListener "touchend",     tend, true
-            window.addEventListener "touchleave",   tend, true
-            window.addEventListener "touchcancel",  tend, true
+            x.addEventListener "touchend",     tend, true
+            x.addEventListener "touchleave",   tend, true
+            x.addEventListener "touchcancel",  tend, true
           radx: screen_x1
           rady: screen_y1
           rad: screen_x1 * screen_x1 + screen_y1 * screen_y1
           draw: @>
             { jaws, spaceKey, radx, rady, vilma, vaquitas, cameos, stilla, rad } = @
-            jaws.clear()
             @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 1) or jaws.pressed[spaceKey]
             vilma.move()
             { px, py } = vilma
@@ -417,6 +658,10 @@ genPage = ->
             vilma.fpy = 0
             vilma.px = 0
             vilma.py = 0
+            px = px | 0
+            py = py | 0
+            @bluescape.frame jaws.context, -px, -py
+            collidables = [ vilma ]
             for v in vaquitas
               v.px -= px
               v.py -= py
@@ -477,5 +722,19 @@ genPage = ->
       #     time++
         
       #   # setInterval gameFrame, 40
+      # window.location.reload(true)
+      window.addEventListener('load', ((e)->
+        if (window.applicationCache)
+          window.applicationCache.addEventListener('updateready', ((e)->
+              # if (window.applicationCache.status == window.applicationCache.UPDATEREADY)
+                # Browser downloaded a new app cache.
+                # Swap it in and reload the page to get the new hotness.
+                window.applicationCache.swapCache()
+                if (confirm('A new version of this site is available. Load it?'))
+                  window.location.reload()
+              # else
+                # Manifest didn't changed. Nothing new to server.
+          ), false)
+      ), false)
 
 genPage()
