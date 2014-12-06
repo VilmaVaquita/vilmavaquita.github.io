@@ -1,6 +1,5 @@
 TARGETS=index.html game.html
 
-
 clean:
 	rm -f $(TARGETS)
 
@@ -11,7 +10,9 @@ all: $(TARGETS)
 	(sh -c "coffee $< >$@.new" && mv $@.new $@ && touch -r $< $@) || rm -f $@
 
 %.appcache: %.html
-	touch -r $< $@
+	sleep 1
+	# touch $@
+	echo >>$@
 
 %.js: %.coffee
 	coffee -bc $<
