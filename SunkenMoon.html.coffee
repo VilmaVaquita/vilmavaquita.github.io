@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.764"
+version = "0.1.769"
 
 { htmlcup } = require 'htmlcup'
 
@@ -481,7 +481,7 @@ genPage = ->
             colors: [ "cyan", "blue" ]
             randomStuff: @>
               { random, sqrt, ctx } = @
-              s = sqrt(15000 / (random() * 100 + 1)) | 0
+              s = sqrt(15000 / (random() * 50 + 1)) | 0
               @withRect (random() * @w | 0), (random() * @h | 0), s, s >> 2, (x,y,w,h)->
                 ctx.fillRect x,y,w,h
               @
@@ -496,9 +496,9 @@ genPage = ->
               for k,v of colors
                 ctx.fillStyle = v
                 colors[k] = ctx.fillStyle
-              ctx.globalAlpha = 0.06
-              if false
-                x = 300
+              ctx.globalAlpha = 0.1
+              if true
+                x = 200
                 while x-- > 0
                   @randomStuff()
             waterscapeSuperFrame: waterscapeSuper.frame
@@ -567,8 +567,8 @@ genPage = ->
               logscale: 2
               __proto__: WaterPlane
               # color: "blue"
-              colors: [ "#0000ff", "#0077ff" ]
-              alpha: 0.3
+              colors: [ "#000033", "#001155" ]
+              alpha: 0.2
               lower:
                   color: "#051555"
                   __proto__: ColorPlane
