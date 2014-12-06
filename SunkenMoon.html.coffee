@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.800"
+version = "0.1.815"
 
 { htmlcup } = require 'htmlcup'
 
@@ -127,6 +127,8 @@ genPage = ->
               dy = py - opy
               dc = cr + ocr
               if (d = dx * dx + dy * dy) <= dc * dc
+                @py = py - 1
+                return
                 { sqrt } = @
                 if false
                   py = opy
@@ -137,7 +139,7 @@ genPage = ->
                     dy = -1
                     d = dx * dx + dy * dy
                     d = sqrt d
-                  d = dc / sqrt(d)
+                  d = 3 * dc / sqrt(d)
                   py = opy + dy * d
                   px = opx + dx * d
                 @px = px | 0
@@ -363,17 +365,17 @@ genPage = ->
                     genRect(v, left, top, width, -vy)
             happybubble:
                 __proto__: encounter
-                p: 1/1000
+                p: 1/10000
                 creature: HappyBubble
                 vy: -1
             grumpybubble:
                 __proto__: encounter
-                p: 1/9000
+                p: 1/90000
                 creature: GrumpyBubble
                 vy: -3
             evilbubble:
                 __proto__: encounter
-                p: 1/18000
+                p: 1/180000
                 creature: EvilBubble
                 vy: -8
             stilla:
