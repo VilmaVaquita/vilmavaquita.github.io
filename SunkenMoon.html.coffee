@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.956"
+version = "0.1.957"
 
 { htmlcup } = require 'htmlcup'
 
@@ -426,7 +426,7 @@ genPage = ->
                 vy: -3
             evilbubble:
                 __proto__: encounter
-                p: 1/30000
+                p: 1/80000
                 creature: EvilBubble
                 vy: -8
             stilla:
