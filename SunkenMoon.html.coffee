@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.815"
+version = "0.1.955"
 
 { htmlcup } = require 'htmlcup'
 
@@ -29,6 +29,7 @@ frames =
   grumpybubble0: datauripng "Grumpy-bubble.png"
   evilbubble0: datauripng "Evil-bubble.png"
   stilla0: datauripng "Stilla-the-starfish.png"
+  cuteluterror: datauripng 'cutelu-terror-v3.png'
 
 gameName = "#{title} v#{version}"
 
@@ -57,6 +58,7 @@ genPage = ->
         @img id:"grumpybubble0", src:frames.grumpybubble0
         @img id:"evilbubble0", src:frames.evilbubble0
         @img id:"stilla0", src:frames.stilla0
+        @img id:"cuteluterror", src:frames.cuteluterror
     @div style:"display:table;width:100%;max-width:100%;height:100%;margin:0;border:0;padding:0", ->
      @div style:"display:table-cell;vertical-align:middle;width:100%;margin:0;border:0;padding:0;text-align:center", ->
       @div style:"position:relative;display:inline-block",  width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", ->
@@ -126,65 +128,114 @@ genPage = ->
               dx = px - opx
               dy = py - opy
               dc = cr + ocr
-              if (d = dx * dx + dy * dy) <= dc * dc
-                @py = py - 1
-                return
-                { sqrt } = @
-                if false
-                  py = opy
-                  px = opx - dc
-                else
-                  d = sqrt d
-                  if d < 0.1
-                    dy = -1
-                    d = dx * dx + dy * dy
-                    d = sqrt d
-                  d = 3 * dc / sqrt(d)
-                  py = opy + dy * d
-                  px = opx + dx * d
-                @px = px | 0
-                @py = py | 0
+              if (qd = dx * dx + dy * dy) <= dc * dc
+                @bumpedInto?(o, qd, dx, dy)
+                o.bumpedInto?(@, qd, -dx, -dy)
+                # if true
+                #   @lr = - @lr
+                #   o.lr = - o.lr
+                #   @px = opx
+                #   @py = opy
+                #   return
+                # @py = py - 1
+                # return
+                # { sqrt } = @
+                # if false
+                #   py = opy
+                #   px = opx - dc
+                # else
+                #   d = sqrt d
+                #   if d < 0.1
+                #     dy = -1
+                #     d = dx * dx + dy * dy
+                #     d = sqrt d
+                #   d = 3 * dc / sqrt(d)
+                #   py = opy + dy * d
+                #   px = opx + dx * d
+                # @px = px | 0
+                # @py = py | 0
                 
           Bubble: Bubble = Sprite
           HappyBubble: HappyBubble = class extends Bubble
             image: happybubble0
             constructor: ->
-              @lr = 3
-              @tb = 3
+              @lr = 4
+              @tb = 4
               super()
             draw: ->
               @py--
               super()
+            bumpedInto: (o, qd, dx, dy)@>
+              return if @dead
+              # if dx * dx * 2 > qd
+              @dead = true
           GrumpyBubble: GrumpyBubble = class extends Bubble
             image: grumpybubble0
             constructor: ->
-              @lr = 6
-              @tb = 6
+              @lr = 7
+              @tb = 7
+              @cr = 8
+              @life = 60
               super()
             draw: ->
               @py -= 3
               super()
+            bumpedInto: (o, qd, dx, dy)@>
+              return if @dead
+              # if dx * dx * 2 > qd
+              # @dead = true
+              ovy = o.vy
+              o.py -= 3 + (ovy > 0 then @life -= ovy; ovy * 2 else 0)
+              @dead = true unless @life > 0
           EvilBubble: EvilBubble = class extends Bubble
             image: evilbubble0
             constructor: ->
-              @lr = 12
-              @tb = 12
+              @lr = 15
+              @tb = 15
+              @cr = 8
+              @vy_ = -8
+              @life = 2200
               super()
             draw: ->
-              @py -= 8
+              l = 0
+              @py += @vy_
+              if (life = @life) < 2200
+                l = 2200 - @life
+                # l -= 1100
+                # l = -l if l < 0
+                # l = (l / 20)|0
+                l = 2200 - l if l > 1100
+                l /= 55
+                @vy_ = - 8 - l
               super()
+            bumpedInto: (o, qd, dx, dy)@>
+              return if @dead
+              # if dx * dx * 2 > qd
+              # @dead = true
+              ovx = o.vx
+              ovy = o.vy
+              @life -= ovx * ovx + ovy * ovy
+              @life -= 10
+              o.px = @px
+              o.py = @py + @vy_
+              @dead = true unless @life > 0
           Stilla: Stilla = class extends Bubble
             image: stilla0
             Bubble: @Bubble
             constructor: ->
-              @lr = 12
-              @tb = 12
+              @lr = 16
+              @tb = 20
               super()
+            draw: ->
+              @lr = -@lr if @px * @lr > 0
+              super()
+            bumpedInto: (o)@>
+              o.dead = true
           Vaquita: Vaquita = class extends Sprite
             twist: [ pixyvaquita_twist_l, pixyvaquita_twist_r ]
             constructor: ->
-              @lr = 18
-              @tb = 5
+              @lr = 16
+              @tb = 16
               super()
             draw: ->
                   if @vx < 0
@@ -370,12 +421,12 @@ genPage = ->
                 vy: -1
             grumpybubble:
                 __proto__: encounter
-                p: 1/90000
+                p: 1/20000
                 creature: GrumpyBubble
                 vy: -3
             evilbubble:
                 __proto__: encounter
-                p: 1/180000
+                p: 1/30000
                 creature: EvilBubble
                 vy: -8
             stilla:
@@ -439,6 +490,34 @@ genPage = ->
               e.width   = @w
               e.height  = @h
               @ctx = e.getContext '2d'
+
+          ScaledImg: ScaledImg =
+            document: document
+            scale: 2
+            init: @>
+              retroScaling = (c)->
+                c.imageSmoothingEnabled = false;
+                c.webkitImageSmoothingEnabled = false;
+                c.mozImageSmoothingEnabled = false;
+                
+              { scale } = @
+              { width, height } = @img
+              @w = w = width * scale
+              @h = h = height * scale
+              c0 = e = @document.createElement "canvas"
+              retroScaling(c0)
+              e.width   = w
+              e.height  = height
+              ctx0 = e.getContext '2d'
+              retroScaling(ctx0)
+              ctx0.drawImage @img, 0, 0, width, height, 0, 0, w, height
+              @canvas = e = @document.createElement "canvas"
+              e.width   = w
+              e.height  = h
+              ctx = e.getContext '2d'
+              retroScaling(ctx)
+              @ctx = ctx.drawImage c0, 0, 0, w, height, 0, 0, w, h
+           
           ParallaxPlane: ParallaxPlane =
             __proto__: GenericPlane
             ParallaxPlaneSuper: GenericPlane
@@ -481,6 +560,65 @@ genPage = ->
             init: @>
               @lower?.init()
               @ParallaxPlaneSuper.init.call @
+          BoundParallaxPlane: BoundParallaxPlane =
+            __proto__: ParallaxPlane
+            BoundParallaxPlaneProto: ParallaxPlane
+            init: @>
+              @BoundParallaxPlaneProto.init.call @
+              @mnx = (@w - (@w >> @logscale))
+              @mny = (@h - (@h >> @logscale))
+            frame: (t, dx, dy)@>
+              { fx, fy, x, y, logscale, w, h, ctx } = @
+              nfx = fx + dx
+              nfy = fy + dy
+              nx = nfx >> logscale
+              ny = nfy >> logscale
+              if nx isnt x
+                { mnx } = @
+                if nx >= mnx
+                  nx = mnx
+                  nfx = mnx << logscale
+                else if nx < 0
+                  nx = 0
+                  nfx = 0
+                @x = nx
+              if ny isnt y
+                { mny } = @
+                if ny >= mny
+                  ny = mny
+                  nfy = mny << logscale
+                else if ny < 0
+                  ny = 0
+                  nfy = 0
+                @y = ny
+              @fx = nfx
+              @fy = nfy
+              # @lower?.frame t, dx >> logscale, dy >> logscale
+              { canvas } = ctx
+              # @mny = 100
+              t.drawImage canvas, -nx, -ny
+
+          SeaFloor: SeaFloor = do->
+            __proto__: BoundParallaxPlane
+            SeaFloorProto: BoundParallaxPlane
+            terror: CuteluTerror =
+              img: cuteluterror
+              scale: 6
+              __proto__: ScaledImg
+            color: "#051555"
+            init: @>
+              @terror.init()
+              @SeaFloorProto.init.call @
+              # { color, w, h } = @
+              # e = @document.createElement "canvas"
+              # e.width   = w
+              # e.height  = h
+              # @ctx = ctx = e.getContext '2d'
+              { color, ctx, w, h } = @
+              @color = ctx.fillStyle = color
+              ctx.fillRect 0, 0, w, h
+              ctx.drawImage @terror.canvas, (w - @terror.w)/2, h - @terror.h
+              
           SeamlessPlane: SeamlessPlane =
             withRect: (rx,ry,rw,rh,cb)@>
               { w, h } = @
@@ -500,6 +638,7 @@ genPage = ->
                 else
                   cb rx, ry, rw, rh, 0, 0
             __proto__: ParallaxPlane
+            
           WaterPlane: WaterPlane = do->
             waterscapeSuper: waterscapeSuper = SeamlessPlane
             __proto__: waterscapeSuper
@@ -597,8 +736,7 @@ genPage = ->
               colors: [ "#000033", "#001155" ]
               alpha: 0.2
               lower:
-                  color: "#051555"
-                  __proto__: ColorPlane
+                  __proto__: SeaFloor
           bluescape:
             __proto__: SeamlessPlane
             bluescapeSuper: SeamlessPlane
@@ -722,7 +860,7 @@ genPage = ->
               @l = [ ] # List of collisions targets
           draw: @>
             { jaws, spaceKey, radx, rady, vilma, vaquitas, cameos, stilla, rad, collisions } = @
-            @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 7) or jaws.pressed[spaceKey]
+            @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 1) or jaws.pressed[spaceKey]
             vilma.fpx += vilma.px
             vilma.fpy += vilma.py
             vilma.move()
@@ -755,7 +893,7 @@ genPage = ->
               continue unless v?
               x = v.px -= px
               y = v.py -= py
-              if (x < -radx) or (x >= radx) or (y < -rady) or (y >= rady)
+              if v.dead or (x < -radx) or (x >= radx) or (y < -rady) or (y >= rady)
                 cameos[k] = null
               else
                 v.draw()
