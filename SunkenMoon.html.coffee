@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.955"
+version = "0.1.956"
 
 { htmlcup } = require 'htmlcup'
 
@@ -569,8 +569,8 @@ genPage = ->
               @mny = (@h - (@h >> @logscale))
             frame: (t, dx, dy)@>
               { fx, fy, x, y, logscale, w, h, ctx } = @
-              nfx = fx + dx
-              nfy = fy + dy
+              nfx = fx - dx
+              nfy = fy - dy
               nx = nfx >> logscale
               ny = nfy >> logscale
               if nx isnt x
