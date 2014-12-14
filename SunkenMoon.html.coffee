@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.108"
+version = "0.2.198"
 
 { htmlcup } = require 'htmlcup'
 
@@ -180,8 +180,11 @@ genPage = ->
               @cr = 8
               @life = 60
               super()
-            draw: ->
-              @py -= 3
+            draw: (collisions, game)->
+              if game.slowedBubbles
+                @py -= 2
+              else
+                @py -= 3
               super()
             bumpedInto: (o, qd, dx, dy)@>
               return if @dead
@@ -199,9 +202,12 @@ genPage = ->
               @vy_ = -8
               @life = 2200
               super()
-            draw: ->
+            draw: (collisions, game)->
               l = 0
-              @py += @vy_
+              if game.slowedBubbles
+                @py -= 3
+              else
+                @py += @vy_
               if (life = @life) < 2200
                 l = 2200 - @life
                 # l -= 1100
@@ -222,16 +228,83 @@ genPage = ->
               o.px = @px
               o.py = @py + @vy_
               @dead = true unless @life > 0
+          slowBubbles: @>
+            return if @slowedBubbles
+            @slowedBubbles = true
+          quitSlowBubbles: @>
+            return unless @slowedBubbles
+            @slowedBubbles = false
           Stilla: Stilla = class extends Bubble
             image: stilla0
             Bubble: @Bubble
             constructor: ->
               @lr = 16
               @tb = 20
+              @patience = 490
               super()
-            draw: ->
-              @lr = -@lr if @px * @lr > 0
+            # Math: Math
+            sqrt: Math.sqrt
+            pow: Math.pow
+            draw: (collisions, game)->
+              { px, py, lr } = @
+              (spin = @spin) then
+                { pow } = @
+                d = pow(px * px + py * py, 0.35)
+                r = 3 / (d + 1)
+                ir = sqrt(1 - r * r) * pow(d, 0.01)
+                @px = px * ir + py * (r * spin)
+                @py = py * ir - px * (r * spin)
+                if px * px + py * py > 40000
+                  @spin = null
+                  if @patience < 0
+                    @dead = 1
+                    # @patience += 10
+                  # @spinFrame = 
+              else
+                closest = null
+                closestDist = null
+                consider = (v)->
+                  return unless v?
+                  dx = px - v.px
+                  dy = py - v.py
+                  d = dx * dx + dy * dy
+                  if !closest? or d < closestDist
+                    closest = v
+                    closestDist = d
+                    game.quitSlowBubbles()
+                { vilma } = game
+                consider vilma
+                if game.vaquitas?
+                  consider v for v in game.vaquitas
+                slowBubbles = false
+                if closest?
+                  if closestDist < 7000
+                    slowBubbles = true
+                    if closestDist < 4000
+                      @patience--
+                      if @patience < 0 or (closestDist < 1000 and closest is vilma)
+                        dx = px - closest.px
+                        @spin = (dx > 0 then +1 else -1) # Start spinning
+                        @patience -= 100
+                      else
+                        dx = px - closest.px
+                        dy = py - closest.py
+                        # fpx = @fpx += dx / 100
+                        # fpy = @fpy += dy / 100
+                        # @px = fpx | 0
+                        # @py = fpy | 0
+                        @px += (dx > +2 then +1 else dx < -2 then -1 else 0)
+                        @py += (dy > +2 then +1 else dy < -2 then -1 else 0)
+                        # @px += 1
+                    
+                # @px += 1
+                if slowBubbles
+                  game.slowBubbles()
+                else
+                  game.quitSlowBubbles()
+                @lr = -lr if px * lr > 0
               super()
+            goodnight: (game)@> game.quitSlowBubbles()
             bumpedInto: (o)@>
               o.dead = true
           Vaquita: Vaquita = class extends Sprite
@@ -426,12 +499,12 @@ genPage = ->
                   vy: -1
               grumpybubble:
                   __proto__: encounter
-                  p: (depth)@> depth < 0.1 then 0 else (depth - 0.1) * 0.00005
+                  p: (depth)@> depth < 0.08 then 0 else (depth - 0.08) * 0.00015
                   creature: GrumpyBubble
                   vy: -3
               evilbubble:
                   __proto__: encounter
-                  p: (depth)@> depth < 0.4 then 0 else (depth - 0.4) * 0.00005
+                  p: (depth)@> depth < 0.35 then 0 else (depth - 0.35) * 0.00005
                   creature: EvilBubble
                   vy: -8
               stilla:
@@ -767,7 +840,7 @@ genPage = ->
               __proto__: WaterPlane
               # color: "blue"
               colors: [ "#000033", "#001155" ]
-              alpha: 0.2
+              alpha: 0.3
               # abslogzoom: 2
               logzoom: 2
               lower: seafloorPlane
@@ -941,10 +1014,10 @@ genPage = ->
             if stilla?
               x = stilla.px -= px
               y = stilla.py -= py
-              if x * x + y * y > rad * 16
+              if stilla.dead or x * x + y * y > rad * 16
                 @stilla = null
               else
-                stilla.draw(collisions)
+                stilla.draw(collisions, @)
                 if (x >= -radx) and (x < radx) and (y >= -rady) and (y < rady)
                   collisions.a stilla
 
@@ -955,7 +1028,7 @@ genPage = ->
               if v.dead or (x < -radx) or (x >= radx) or (y < -rady) or (y >= rady)
                 cameos[k] = null
               else
-                v.draw()
+                v.draw(collisions, @)
                 collisions.q v
 
             @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, px, py)
