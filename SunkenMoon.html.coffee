@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.94"
+version = "0.2.108"
 
 { htmlcup } = require 'htmlcup'
 
@@ -379,8 +379,9 @@ genPage = ->
                 s + pgen m
               generate: (game,left,top,width,height,vx,vvy)@>
                 { probability, random } = @
+                depth = game.getDepth()
                 genRect = (m,left,top,width,height)=>
-                  c = m.p * width * height
+                  c = m.p(depth) * width * height
                   # c = 0
                   c = @poissonSample(c)
                   # c = 0 # if c > 1000
@@ -389,9 +390,9 @@ genPage = ->
                     m.add?( game, left + ((random() * width)|0), top + ((random() * height)|0) )
                     1
                 if vx * vx >= width * width
-                  for k,v of @
+                  for k,v of @catalogue
                     genRect(v, left, top, width, height)
-                else for k,v of @
+                else for k,v of @catalogue
                   vy = vvy - v.vy
                   if vy * vy >= height * height
                     genRect(v, left, top, width, height)
@@ -417,25 +418,26 @@ genPage = ->
                     genRect(v, left, top + height - vy, width, vy)
                   else if vy < 0
                     genRect(v, left, top, width, -vy)
-            happybubble:
-                __proto__: encounter
-                p: 1/10000
-                creature: HappyBubble
-                vy: -1
-            grumpybubble:
-                __proto__: encounter
-                p: 1/20000
-                creature: GrumpyBubble
-                vy: -3
-            evilbubble:
-                __proto__: encounter
-                p: 1/80000
-                creature: EvilBubble
-                vy: -8
-            stilla:
-                __proto__: encounter
-                p: 1/40000
-                add: (game, x, y)@> game.addStilla(x, y)
+            catalogue:
+              happybubble:
+                  __proto__: encounter
+                  p: (depth)@> 0.0001 * (1.5 - depth)
+                  creature: HappyBubble
+                  vy: -1
+              grumpybubble:
+                  __proto__: encounter
+                  p: (depth)@> depth < 0.1 then 0 else (depth - 0.1) * 0.00005
+                  creature: GrumpyBubble
+                  vy: -3
+              evilbubble:
+                  __proto__: encounter
+                  p: (depth)@> depth < 0.4 then 0 else (depth - 0.4) * 0.00005
+                  creature: EvilBubble
+                  vy: -8
+              stilla:
+                  __proto__: encounter
+                  p: (depth)@> 1/40000
+                  add: (game, x, y)@> game.addStilla(x, y)
           touchInput:
             tx: 0
             ty: 0
@@ -581,6 +583,8 @@ genPage = ->
               if false
                 @fx = (@x = @mx) << abslogzoom
                 @fy = (@y = @my) << abslogzoom
+              @fx = @fy = 0
+              @mfy = @my << abslogzoom
             frame: (t, dx, dy)@>
               { fx, fy, x, y, abslogzoom, w, h, ctx } = @
               nfx = fx - dx
@@ -747,6 +751,8 @@ genPage = ->
           #     @waterscapeSuperFrame.apply @, arguments
           #     # t.restore()
           #   logzoom: 0
+          seafloor: seafloorPlane = __proto__: SeaFloor
+          getDepth: @> @seafloor.fy / @seafloor.mfy
           waterscape: waterscape = do->
             __proto__: WaterPlane
             # color: "cyan"
@@ -764,8 +770,7 @@ genPage = ->
               alpha: 0.2
               # abslogzoom: 2
               logzoom: 2
-              lower:
-                  __proto__: SeaFloor
+              lower: seafloorPlane
           bluescape:
             __proto__: SeamlessPlane
             bluescapeSuper: SeamlessPlane
