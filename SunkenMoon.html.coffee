@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.198"
+version = "0.2.208"
 
 { htmlcup } = require 'htmlcup'
 
@@ -457,11 +457,14 @@ genPage = ->
                   c = m.p(depth) * width * height
                   # c = 0
                   c = @poissonSample(c)
-                  # c = 0 # if c > 1000
-                  # c-- if random() > 0.15
-                  while c-- > 0
-                    m.add?( game, left + ((random() * width)|0), top + ((random() * height)|0) )
-                    1
+                  if c is 1
+                      m.add?( game, left + ((random() * width)|0), top + ((random() * height)|0) )
+                  else
+                    # c = 0 # if c > 1000
+                    # c-- if random() > 0.15
+                    while c-- > 0
+                      m.add?( game, left + ((random() * width)|0), top + ((random() * height)|0) )
+                      1
                 if vx * vx >= width * width
                   for k,v of @catalogue
                     genRect(v, left, top, width, height)
@@ -509,7 +512,7 @@ genPage = ->
                   vy: -8
               stilla:
                   __proto__: encounter
-                  p: (depth)@> 1/40000
+                  p: (depth)@> depth < 0.01 then 1 else (1-depth)/100000
                   add: (game, x, y)@> game.addStilla(x, y)
           touchInput:
             tx: 0
