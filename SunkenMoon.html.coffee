@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.1.957"
+version = "0.2.94"
 
 { htmlcup } = require 'htmlcup'
 
@@ -16,6 +16,7 @@ fs = require 'fs'
 
 datauri = (t,x)-> "data:#{t};base64,#{new Buffer(fs.readFileSync(x)).toString("base64")}"
 datauripng = (x)-> datauri "image/png", x
+dataurijpeg = (x)-> datauri "image/jpeg", x
 datauriicon = (x)-> datauri "image/x-icon", x
 
 icon = datauriicon "vaquita.ico"
@@ -29,7 +30,8 @@ frames =
   grumpybubble0: datauripng "Grumpy-bubble.png"
   evilbubble0: datauripng "Evil-bubble.png"
   stilla0: datauripng "Stilla-the-starfish.png"
-  cuteluterror: datauripng 'cutelu-terror-v3.png'
+  # cuteluterror: datauripng 'cutelu-terror-v3.png'
+  seafloor: dataurijpeg "seafloor.jpg"
 
 gameName = "#{title} v#{version}"
 
@@ -58,7 +60,8 @@ genPage = ->
         @img id:"grumpybubble0", src:frames.grumpybubble0
         @img id:"evilbubble0", src:frames.evilbubble0
         @img id:"stilla0", src:frames.stilla0
-        @img id:"cuteluterror", src:frames.cuteluterror
+        # @img id:"cuteluterror", src:frames.cuteluterror
+        @img id:"seafloor", src:frames.seafloor
     @div style:"display:table;width:100%;max-width:100%;height:100%;margin:0;border:0;padding:0", ->
      @div style:"display:table-cell;vertical-align:middle;width:100%;margin:0;border:0;padding:0;text-align:center", ->
       @div style:"position:relative;display:inline-block",  width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", ->
@@ -493,17 +496,17 @@ genPage = ->
 
           ScaledImg: ScaledImg =
             document: document
-            scale: 2
+            zoom: 2
             init: @>
               retroScaling = (c)->
                 c.imageSmoothingEnabled = false;
                 c.webkitImageSmoothingEnabled = false;
                 c.mozImageSmoothingEnabled = false;
                 
-              { scale } = @
+              { zoom } = @
               { width, height } = @img
-              @w = w = width * scale
-              @h = h = height * scale
+              @w = w = width * zoom
+              @h = h = height * zoom
               c0 = e = @document.createElement "canvas"
               retroScaling(c0)
               e.width   = w
@@ -522,102 +525,124 @@ genPage = ->
             __proto__: GenericPlane
             ParallaxPlaneSuper: GenericPlane
             lower: null
-            logscale: 2
             x: 0
             y: 0
             fx: 0
             fy: 0
+            logzoom: 2
             frame: (t,dx,dy)@>
-              { fx, fy, x, y, logscale, w, h, ctx } = @
+              { fx, fy, x, y, abslogzoom, w, h, ctx } = @
               nfx = fx + dx
               nfy = fy + dy
-              nx = nfx >> logscale
-              ny = nfy >> logscale
+              nx = nfx >> abslogzoom
+              ny = nfy >> abslogzoom
               if nx isnt x
                 if nx >= w
                   nx -= w
-                  nfx -= w << logscale
+                  nfx -= w << abslogzoom
                 else if nx < 0
                   nx += w
-                  nfx += w << logscale
+                  nfx += w << abslogzoom
                 @x = nx
               if ny isnt y
                 if ny >= h
                   ny -= h
-                  nfy -= h << logscale
+                  nfy -= h << abslogzoom
                 else if ny < 0
                   ny += h
-                  nfy += h << logscale
+                  nfy += h << abslogzoom
                 @y = ny
               @fx = nfx
               @fy = nfy
-              @lower?.frame t, dx >> logscale, dy >> logscale
+              @lower?.frame t, dx, dy
               { canvas } = ctx
               t.drawImage canvas,  nx,      ny
               t.drawImage canvas,  nx - w,  ny
               t.drawImage canvas,  nx,      ny - h
               t.drawImage canvas,  nx - w,  ny - h
-            init: @>
-              @lower?.init()
-              @ParallaxPlaneSuper.init.call @
+            init: (options)@>
+              @abslogzoom ?= @logzoom
+              (l = @lower)? then
+                l.logzoom? then l.abslogzoom ?= @logzoom + l.logzoom
+                l.init(options)
+              @ParallaxPlaneSuper.init.call @, options
           BoundParallaxPlane: BoundParallaxPlane =
             __proto__: ParallaxPlane
             BoundParallaxPlaneProto: ParallaxPlane
-            init: @>
+            pmul: 1
+            alert: alert
+            init: (options)@>
+              { screenw, screenh } = options
               @BoundParallaxPlaneProto.init.call @
-              @mnx = (@w - (@w >> @logscale))
-              @mny = (@h - (@h >> @logscale))
+              { logzoom, abslogzoom, w, h, pmul } = @
+              @mx = ((w << abslogzoom) * pmul - screenw * 8) >> abslogzoom
+              @my = ((h << abslogzoom) * pmul - screenh * 8) >> abslogzoom
+              # { alert } = @; alert screenw
+              if false
+                @fx = (@x = @mx) << abslogzoom
+                @fy = (@y = @my) << abslogzoom
             frame: (t, dx, dy)@>
-              { fx, fy, x, y, logscale, w, h, ctx } = @
+              { fx, fy, x, y, abslogzoom, w, h, ctx } = @
               nfx = fx - dx
               nfy = fy - dy
-              nx = nfx >> logscale
-              ny = nfy >> logscale
+              nx = nfx >> abslogzoom
+              ny = nfy >> abslogzoom
               if nx isnt x
-                { mnx } = @
-                if nx >= mnx
-                  nx = mnx
-                  nfx = mnx << logscale
+                { mx } = @
+                if nx >= mx
+                  nx = mx
+                  nfx = mx << abslogzoom
                 else if nx < 0
                   nx = 0
                   nfx = 0
                 @x = nx
               if ny isnt y
-                { mny } = @
-                if ny >= mny
-                  ny = mny
-                  nfy = mny << logscale
+                { my } = @
+                if ny >= my
+                  ny = my
+                  nfy = my << abslogzoom
                 else if ny < 0
                   ny = 0
                   nfy = 0
                 @y = ny
               @fx = nfx
               @fy = nfy
-              # @lower?.frame t, dx >> logscale, dy >> logscale
+              # @lower?.frame t, dx >> abslogzoom, dy >> abslogzoom
               { canvas } = ctx
               # @mny = 100
               t.drawImage canvas, -nx, -ny
+              # t.drawImage canvas, 0, 0, w, h, -nx, -ny, w*pmul, h*pmul
 
           SeaFloor: SeaFloor = do->
             __proto__: BoundParallaxPlane
             SeaFloorProto: BoundParallaxPlane
-            terror: CuteluTerror =
-              img: cuteluterror
-              scale: 6
-              __proto__: ScaledImg
-            color: "#051555"
-            init: @>
-              @terror.init()
-              @SeaFloorProto.init.call @
+            # terror: CuteluTerror =
+            #   img: cuteluterror
+            #   zoom: 6
+            #   __proto__: ScaledImg
+            # color: "#051555"
+            seafloorImg: seafloor
+            init: (options)@>
+              { seafloorImg } = @
+              # @terror.init(options)
+              w = seafloorImg.width
+              h = seafloorImg.height
+              @w = w
+              @h = h
+              @SeaFloorProto.init.call @, options
               # { color, w, h } = @
               # e = @document.createElement "canvas"
               # e.width   = w
               # e.height  = h
               # @ctx = ctx = e.getContext '2d'
-              { color, ctx, w, h } = @
-              @color = ctx.fillStyle = color
-              ctx.fillRect 0, 0, w, h
-              ctx.drawImage @terror.canvas, (w - @terror.w)/2, h - @terror.h
+              { ctx, w, h } = @
+              ctx.drawImage seafloorImg, 0, 0
+              if false
+                ctx.fillStyle = "magenta"
+                ctx.fillRect 0, 0, w, 1
+                ctx.fillRect 0, 0, 1, h
+                ctx.fillRect 0, h - 1, w, 1
+                ctx.fillRect w - 1, 0, 1, h              
               
           SeamlessPlane: SeamlessPlane =
             withRect: (rx,ry,rw,rh,cb)@>
@@ -651,18 +676,18 @@ genPage = ->
               @withRect (random() * @w | 0), (random() * @h | 0), s, s >> 2, (x,y,w,h)->
                 ctx.fillRect x,y,w,h
               @
-            init: @>
+            init: (options)@>
               { lower, w, h, moltf, colors } = @
               if lower?
                 lower.w ?= w
                 lower.h ?= h
-                lower.moltf ?= moltf >> lower.logscale if moltf?
-              @waterscapeSuper.init.call @
+                lower.moltf ?= moltf >> lower.logzoom if moltf?
+              @waterscapeSuper.init.call @, options
               { ctx } = @
               for k,v of colors
                 ctx.fillStyle = v
                 colors[k] = ctx.fillStyle
-              ctx.globalAlpha = 0.1
+              ctx.globalAlpha = 0.16
               if true
                 x = 200
                 while x-- > 0
@@ -674,11 +699,11 @@ genPage = ->
               ctx.fillStyle = @colors[ random() * 1.2 | 0 ]
               @randomStuff() while moltf-- > 0
 
-              # t.save()
+              t.save()
               t.globalAlpha = @alpha
               @waterscapeSuperFrame.apply @, arguments
-              # t.restore()
-            logscale: 0
+              t.restore()
+            logzoom: 0
           
           # PinkWaveletPlane: PinkWaveletPlane = do->
           #   waterscapeSuper: waterscapeSuper = SeamlessPlane
@@ -698,7 +723,7 @@ genPage = ->
           #     if lower?
           #       lower.w ?= w
           #       lower.h ?= h
-          #       lower.moltf ?= moltf >> lower.logscale if moltf?
+          #       lower.moltf ?= moltf >> lower.logzoom if moltf?
           #     @waterscapeSuper.init.call @
           #     { ctx } = @
           #     for k,v of colors
@@ -721,26 +746,31 @@ genPage = ->
           #     t.globalAlpha = alpha if alpha?
           #     @waterscapeSuperFrame.apply @, arguments
           #     # t.restore()
-          #   logscale: 0
+          #   logzoom: 0
           waterscape: waterscape = do->
             __proto__: WaterPlane
             # color: "cyan"
-            logscale: 0
+            # logzoom: 0
             moltf: 12
             colors: [ "#051555", "#33ddff" ]
-            alpha: 0.3
+            alpha: 0.2
+            logzoom: 0
             lower:
-              logscale: 2
+              # __proto__: ColorPlane
+              # logzoom: 2
               __proto__: WaterPlane
               # color: "blue"
               colors: [ "#000033", "#001155" ]
               alpha: 0.2
+              # abslogzoom: 2
+              logzoom: 2
               lower:
                   __proto__: SeaFloor
           bluescape:
             __proto__: SeamlessPlane
             bluescapeSuper: SeamlessPlane
             lower: waterscape
+            logzoom: 0
             frame: (t,sx,sy)@>
               { ctx, random, w, h } = @
 
@@ -774,7 +804,7 @@ genPage = ->
               # t.fillRect 0, 0, 100, 100
               # t.clearRect 0, 0, 100, 100
               # t.drawImage t, 0, 0, 100, 100, 50, 50, 100, 100
-            init: @>
+            init: (options)@>
               { w, h, lower } = @
 
               @w = w
@@ -783,7 +813,7 @@ genPage = ->
               lower.w = (w >> 2) * 5
               lower.h = (h >> 2) * 5
 
-              @bluescapeSuper.init.call @
+              @bluescapeSuper.init.call @, options
 
               { ctx } = @
 
@@ -795,9 +825,9 @@ genPage = ->
 
             bluescape.w = radx
             bluescape.h = rady
-            bluescape.init()
+            bluescape.init( { screenw: radx * 2, screenh: rady * 2 } )
 
-            v = new Vilma(@) # jaws.Sprite x:screen_x1*2, y:screen_y1*2, scale:2, image:pixyvaquita
+            v = new Vilma(@) # jaws.Sprite x:screen_x1*2, y:screen_y1*2, zoom:2, image:pixyvaquita
             v.px = 0
             v.py = 0
             v.vx = 0
@@ -860,26 +890,49 @@ genPage = ->
               @l = [ ] # List of collisions targets
           draw: @>
             { jaws, spaceKey, radx, rady, vilma, vaquitas, cameos, stilla, rad, collisions } = @
+
             @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 1) or jaws.pressed[spaceKey]
+
             vilma.fpx += vilma.px
             vilma.fpy += vilma.py
             vilma.move()
-            { px, py } = vilma
-            vilma.fpx = 0
-            vilma.fpy = 0
-            vilma.px = 0
-            vilma.py = 0
-            px = px | 0
-            py = py | 0
-            @bluescape.frame jaws.context, -px, -py
+
+            if true
+              { px, py, fpx, fpy } = vilma
+  
+              vilma.fpx -= px
+              vilma.fpy -= py
+              vilma.px = 0
+              vilma.py = 0
+  
+              px = px | 0
+              py = py | 0
+  
+              @bluescape.frame jaws.context, -fpx, -fpy
+            else
+              { px, py } = vilma
+                
+              vilma.fpx = 0
+              vilma.fpy = 0
+              vilma.px = 0
+              vilma.py = 0
+                
+              px = px | 0
+              py = py | 0
+                
+              @bluescape.frame jaws.context, -px, -py
+
             collisions.a vilma
+
             for v in vaquitas
               x = v.px -= px
               y = v.py -= py
               v.draw()
               if (x >= -radx) and (x < radx) and (y >= -rady) and (y < rady)
                 collisions.a v
+
             vilma.draw()
+
             if stilla?
               x = stilla.px -= px
               y = stilla.py -= py
@@ -889,6 +942,7 @@ genPage = ->
                 stilla.draw(collisions)
                 if (x >= -radx) and (x < radx) and (y >= -rady) and (y < rady)
                   collisions.a stilla
+
             for k,v of cameos
               continue unless v?
               x = v.px -= px
@@ -898,11 +952,14 @@ genPage = ->
               else
                 v.draw()
                 collisions.q v
+
             @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, px, py)
+
             collisions.clear()
               
             if (@gameloop.ticks & 0xff) is 0xff
               fps.innerHTML = "#{@gameloop.fps} fps"
+
           jaws: jaws
           spaceKey: spaceKey
         if true
@@ -921,12 +978,12 @@ genPage = ->
       #     x -= vx = pressedKeys[leftKey] - pressedKeys[rightKey]
       #     y -= pressedKeys[upKey] - pressedKeys[downKey]
       #     if vx > 0
-      #       scaleX = 1
+      #       zoomX = 1
       #     else if vx < 0
-      #       scaleX = -1
-      #     v.setAttribute("transform", "translate(#{x}, #{y}) scale(#{scaleX}, #{scaleY})")
+      #       zoomX = -1
+      #     v.setAttribute("transform", "translate(#{x}, #{y}) zoom(#{zoomX}, #{zoomY})")
       #     # transform = v.transform.baseVal.getItem(0)
-      #     # transformMatrix.a = scaleX
+      #     # transformMatrix.a = zoomX
       #     # transformMatrix.e = x
       #     # transformMatrix.f = y
       #     if (time % 3) is 0
