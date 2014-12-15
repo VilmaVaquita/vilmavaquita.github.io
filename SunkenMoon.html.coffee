@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.211"
+version = "0.2.230"
 
 { htmlcup } = require 'htmlcup'
 
@@ -245,21 +245,23 @@ genPage = ->
             # Math: Math
             sqrt: Math.sqrt
             pow: Math.pow
+            sin: Math.sin
             draw: (collisions, game)->
               { px, py, lr } = @
               (spin = @spin) then
-                { pow } = @
-                d = pow(px * px + py * py, 0.35)
-                r = 3 / (d + 1)
-                ir = sqrt(1 - r * r) * pow(d, 0.01)
-                @px = px * ir + py * (r * spin)
-                @py = py * ir - px * (r * spin)
-                if px * px + py * py > 40000
-                  @spin = null
-                  if @patience < 0
-                    @dead = 1
-                    # @patience += 10
-                  # @spinFrame = 
+                { pow, sin } = @
+                d = pow(px * px + py * py, 0.42)
+                if d > 1
+                  r = 5 / (d + 1)
+                  ir = sqrt(1 - r * r) * pow(sin(d / 4000) * 4000, 0.0035)
+                  @px = px * ir + py * (r * spin)
+                  @py = py * ir - px * (r * spin)
+                  if px * px + py * py > 40000
+                    @spin = null
+                    if @patience < 0
+                      @dead = 1
+                      # @patience += 10
+                    # @spinFrame = 
               else
                 closest = null
                 closestDist = null
@@ -533,10 +535,14 @@ genPage = ->
                 for t in ev.changedTouches
                   { identifier, pageX, pageY } = t
                   o = ongoing[identifier]
-                  dx = pageX - o.px
-                  dy = pageY - o.py
-                  tx * dx > 0 then tx += dx else tx = dx
-                  ty * dy > 0 then ty += dy else ty = dy
+                  dx = (pageX - o.px) * 4
+                  dy = (pageY - o.py) * 4
+                  dx *= 3 if dx * tx < 0
+                  dy *= 3 if dy * ty < 0
+                  tx += dx
+                  ty += dy
+                  # tx * dx > 0 then tx += dx else tx = dx * 2
+                  # ty * dy > 0 then ty += dy else ty = dy * 2
                   o.px = pageX
                   o.py = pageY
                 @tx = tx
