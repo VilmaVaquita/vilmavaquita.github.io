@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.243"
+version = "0.2.247"
 
 { htmlcup } = require 'htmlcup'
 
@@ -199,7 +199,7 @@ genPage = ->
               @lr = 15
               @tb = 15
               @cr = 8
-              @vy_ = -8
+              @vy_ = -7
               @life = 2200
               super()
             draw: (collisions, game)->
@@ -1039,6 +1039,7 @@ genPage = ->
               x = stilla.px -= px
               y = stilla.py -= py
               if stilla.dead or x * x + y * y > rad * 16
+                stilla.goodnight(@)
                 @stilla = null
               else
                 stilla.draw(collisions, @)
