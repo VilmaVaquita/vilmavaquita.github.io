@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.209"
+version = "0.2.211"
 
 { htmlcup } = require 'htmlcup'
 
@@ -529,13 +529,18 @@ genPage = ->
                     py: pageY
               move: (ev,el)@>
                 { ongoing } = @
+                { tx, ty } = @
                 for t in ev.changedTouches
                   { identifier, pageX, pageY } = t
                   o = ongoing[identifier]
-                  @tx += pageX - o.px
-                  @ty += pageY - o.py
+                  dx = pageX - o.px
+                  dy = pageY - o.py
+                  tx * dx > 0 then tx += dx else tx = dx
+                  ty * dy > 0 then ty += dy else ty = dy
                   o.px = pageX
                   o.py = pageY
+                @tx = tx
+                @ty = ty
               end: (ev,el)@>
                 { ongoing } = @
                 for t in ev.changedTouches
