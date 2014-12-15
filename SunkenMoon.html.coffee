@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.208"
+version = "0.2.209"
 
 { htmlcup } = require 'htmlcup'
 
@@ -181,7 +181,7 @@ genPage = ->
               @life = 60
               super()
             draw: (collisions, game)->
-              if game.slowedBubbles
+              if game?.slowedBubbles
                 @py -= 2
               else
                 @py -= 3
@@ -403,7 +403,7 @@ genPage = ->
               v.vy = 0
               v.px = Math.floor(Math.sin(angle) * 300)
               v.py = Math.floor(Math.cos(angle) * 300)
-              v.draw()
+              # v.draw()
               # vaquita.update()
               @vaquitas.push v
           addStilla: (x, y)@>
@@ -422,7 +422,7 @@ genPage = ->
                 b[i] = v
               else
                 b.push v
-              v.draw()
+              # v.draw()
           constructor: (@vaquitas = [], @cameos = [], @stilla = null)->
           encounters:
             __proto__:
