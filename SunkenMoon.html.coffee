@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.230"
+version = "0.2.243"
 
 { htmlcup } = require 'htmlcup'
 
@@ -251,17 +251,26 @@ genPage = ->
               (spin = @spin) then
                 { pow, sin } = @
                 d = pow(px * px + py * py, 0.42)
-                if d > 1
-                  r = 5 / (d + 1)
-                  ir = sqrt(1 - r * r) * pow(sin(d / 4000) * 4000, 0.0035)
-                  @px = px * ir + py * (r * spin)
-                  @py = py * ir - px * (r * spin)
-                  if px * px + py * py > 40000
-                    @spin = null
-                    if @patience < 0
-                      @dead = 1
-                      # @patience += 10
-                    # @spinFrame = 
+                r = 5 / (d + 1)
+                if r < 1
+                  ir = 1
+                else
+                  d = sin(d / 8000)
+                  d = d * d * 8000
+                  ir = sqrt(1 - r * r) * pow(d, 0.01)
+                @px = px * ir + py * (r * spin)
+                @py = py * ir - px * (r * spin)
+                (d = px * px + py * py) > 40000 then
+                  @spin = null
+                  if @patience < 0
+                    @dead = 1
+                    # @patience += 10
+                  # @spinFrame =
+                else !(d >= 0) then
+                  @px = 0
+                  @py = 1
+                  throw "ir #{ir}"
+                
               else
                 closest = null
                 closestDist = null
@@ -271,6 +280,7 @@ genPage = ->
                   dy = py - v.py
                   d = dx * dx + dy * dy
                   if !closest? or d < closestDist
+                    return unless d >= 0
                     closest = v
                     closestDist = d
                     game.quitSlowBubbles()
@@ -286,7 +296,7 @@ genPage = ->
                       @patience--
                       if @patience < 0 or (closestDist < 1000 and closest is vilma)
                         dx = px - closest.px
-                        @spin = (dx > 0 then +1 else -1) # Start spinning
+                        @spin = (lr > 0 then +1 else -1) # Start spinning
                         @patience -= 100
                       else
                         dx = px - closest.px
