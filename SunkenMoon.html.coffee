@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.247"
+version = "0.2.249"
 
 { htmlcup } = require 'htmlcup'
 
@@ -31,7 +31,7 @@ frames =
   evilbubble0: datauripng "Evil-bubble.png"
   stilla0: datauripng "Stilla-the-starfish.png"
   # cuteluterror: datauripng 'cutelu-terror-v3.png'
-  seafloor: dataurijpeg "seafloor.jpg"
+  seafloor: dataurijpeg "seafloor.png"
 
 gameName = "#{title} v#{version}"
 
