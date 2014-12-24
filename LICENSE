@@ -1,5 +1,3 @@
-The jaws/ subdirectory is from http://jawsjs.com, and is separately licensed (LGPL) and copyrighted.
-
 "vaquita1.jpg" was contributed anonymously for promoting vaquitas
 
 
@@ -8,6 +6,6 @@ Copyright: 2014 Michele Bini <michele.bini@gmail.com>
 License: Creative Commons Attribution Share-alike
 
 
-Files: index.html.coffee, game.html.coffee
+Files: index.html.coffee
 Copyright: 2014 Michele Bini <michele.bini@gmail.com>
-License: MIT-LICENSE
+License: MIT License
