@@ -158,5 +158,5 @@ htmlcup.html5Page ->
           @a href: 'http://www.youtube.com/watch?v=27pJ2S5RT8g', "Video of a baby Vaquita"
       @section class:"dynamic-section dynsec-vertical", ->
         @img src:pixyvaquita, title:"Please be our friend!", width:"150", height:"90", class:"flip-lr pixelart"
-        @a href:"game.html", "Vilma the Vaquita - demo game"
+        @a href:"/The-Moon-is-sinking/game.html", "Vilma Vaquita - demo game"
         @img src:pixyvaquita2, title:"Play with us!", width:"150", height:"90", class:"pixelart"
